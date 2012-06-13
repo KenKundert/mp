@@ -5,12 +5,13 @@ This is a simple command line music player. It will play individual music files
 (flac, mp3, and ogg), directories that contain music files, and m3u play lists.
 
 Tested with Python version 2.7 under Fedora Linux. You will need install the 
-python gstreamer module with:
-    yum install gstreamer-python
-You also need to install the necessary gstreamer plugins, which are in the RPM 
-Fusion non-free repository. Once you install the rpm-fusion free and non-free 
-repository, install the plugins with
-    yum install gstreamer-plugins-good gstreamer-plugins-ugly
+python gstreamer module and plugins with:
+    yum install gstreamer-python gstreamer-plugins-good
+If you want mp3 support, you also need to install the 'ugly' plugins from the 
+RPM Fusion non-free repository.
+    yum install gstreamer-plugins-ugly
+If you do not want mp3 support, edit mp.py and remove 'mp3' from 
+mediaFileExtensions and edit mp.1 remove any reference to mp3.
 
 To get the source code:
 > git clone git@github.com:KenKundert/mp.git
