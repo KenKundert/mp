@@ -77,7 +77,7 @@ class Player:
             print "Error: %s" % err, debug
             self.playing = False
 
-    def addSongs(self, paths, cwd='.'):
+    def addSongs(self, paths, cwd=''):
         from fileutils import isFile, isDir, getAll, getExt, getHead, makePath
         for path in paths:
             path = makePath(cwd, path.strip())
@@ -103,11 +103,12 @@ class Player:
 
     def play(self):
         import time
+        from fileutils import absPath, normPath
         for song in self.songs:
             self.playing = True
             if not self.quiet:
-                print song
-            self.player.set_property("uri", "file://" + song)
+                print normPath(song)
+            self.player.set_property("uri", "file://" + absPath(song))
             self.player.set_state(gst.STATE_PLAYING)
             while self.playing:
                 time.sleep(1)

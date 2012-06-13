@@ -1,5 +1,6 @@
 # Imports {{{1
 import types as Types
+import re as RE
 
 # cull {{{1
 # Cull Nones out of a list

@@ -146,6 +146,20 @@ def splitPath(path):
     """
     return os.path.split(path)
 
+# Return absolute path
+def absPath(path):
+    """
+    Convert to an absolute path.
+    """
+    return os.path.abspath(path)
+
+# Return normalized path
+def normPath(path):
+    """
+    Convert to an normalized path (remove redundant separators and up-level references).
+    """
+    return os.path.normpath(path)
+
 # Perform common path expansions (user, envvars)
 def expandPath(path):
     """
