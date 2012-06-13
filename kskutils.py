@@ -97,7 +97,6 @@ def examine( obj
     , alreadySeen = None
 ):
     r"""
-    Examine
     Returns a string that contains a pretty-printed version of the argument and
     all of its contents.
 
@@ -379,7 +378,6 @@ def toStr(obj, level = 0):
 
 
 # title {{{1
-# Return the string given as an argument with an underline and perhaps overline
 def title(text, level=2, overline=False, newline=True):
     r"""
     Returns the string given as an argument with an underline and perhaps an
@@ -418,6 +416,24 @@ def title(text, level=2, overline=False, newline=True):
     result.append(text)
     result.append(len(text)*char)
     return '\n'.join(result)
+
+# wrap {{{1
+def wrap(paragraphs):
+    r"""
+    Accept a list of paragraphs and return a string with each paragraph dedented
+    and wrapped.
+
+    Examples:
+    >>> print wrap(['    Hello', '    World!'])
+    Hello
+    <BLANKLINE>
+    World!
+
+    """
+    from textwrap import dedent, fill
+    return '\n\n'.join([
+        fill(dedent(each)) for each in paragraphs
+    ])
 
 # Tests are run from ./test
 #if __name__ == "__main__":

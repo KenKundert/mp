@@ -5,17 +5,10 @@ mediaFileExtensions = ['flac', 'mp3', 'ogg'] # use lower case only
 assert 'm3u' not in mediaFileExtensions
 
 # Process command line {{{1
-# Command line processing must be performed before importing gstreamer because
-# it believes it should do it.
-
-def wrap(paragraphs):
-    from textwrap import dedent, fill
-    return '\n\n'.join([
-        fill(dedent(each)) for each in paragraphs
-    ])
-
+# Command line processing must be performed before importing gstreamer otherwise
+# it tries to handle the command line options.
 from cmdline import commandLineProcessor
-from kskutils import conjoin
+from kskutils import conjoin, wrap
 
 clp = commandLineProcessor()
 clp.setDescription('Music Player', wrap(['''\
