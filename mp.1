@@ -1,0 +1,38 @@
+.\"
+.\" mp.1 - the *roff document processor source for the mp manual
+.\"
+.\" Author:
+.\" Ken Kundert
+.\" mp@shalmirane.com .
+.\"
+.\" You can view a formatted version of this man page using:
+.\"    nroff -man mp.1 | less
+.\" or
+.\"    pdfroff -t -man mp.1 > mp.pdf
+.\"    evince mp.pdf
+.TH mp 1 "2012-04-25"
+.SH NAME
+mp - A music player
+.SH SYNTAX
+\fBmp\fR [ \fI options \fR ] \fI args ... \fP
+.SH DESCRIPTION
+\fBmp\fR plays any music files given on its command line. If either a play list
+(m3u file) or a  directory is given, it will be recursively searched
+for music files, which will be added to the list of songs to be
+played.
+.PP
+Currently only flac, mp3 and ogg music files are supported.
+.SS OPTIONS
+.IP "-1, --quiet"
+Do not print name of the music file being played.
+.IP "-r, --repeat"
+Repeat songs.
+.IP "-s, --shuffle"
+Shuffle songs.
+If combined with repeat, the songs will be shuffled before each repeat.
+.SH AUTHOR
+.nf
+Ken Kundert
+.PP
+Send bug reports and enhancement requests to
+.BR mp@shalmirane.com .
