@@ -124,6 +124,8 @@ try:
         loop = glib.MainLoop()
         loop.run()
         first = False
+        if repeat and not quiet:
+            print "Rewinding ..."
 except KeyboardInterrupt:
     if not quiet:
         print "%s: killed at user request." % clp.progName()
