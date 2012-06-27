@@ -142,6 +142,7 @@ class Player:
         for song in self.songs:
             if song in self.skip:
                 continue
+            self.played.append(song)
             self.playing = True
             if not self.quiet:
                 print normPath(song)
@@ -149,10 +150,10 @@ class Player:
             self.player.set_state(gst.STATE_PLAYING)
             while self.playing:
                 time.sleep(1)
-            self.played.append(song)
+        self.skip = []
+        self.played = []
         time.sleep(1)
         loop.quit()
-        self.skip = []
 
     def songsAlreadyPlayed(self):
         return self.skip + self.played
