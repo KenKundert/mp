@@ -14,18 +14,18 @@ If you do not want mp3 support, edit mp.py and remove 'mp3' from
 mediaFileExtensions and edit mp.1 remove any reference to mp3.
 
 To get the source code:
-> git clone git@github.com:KenKundert/mp.git
+$ git clone git@github.com:KenKundert/mp.git
 
 Once cloned, you can get the latest updates using:
-> git pull
+$ git pull
 
 To install into ~/local (modify the script to change the install directory):
-> ./install
+$ ./install
 
 Be sure to add ~/local/lib/python to your PYTHONPATH.
 
 To read the MP manual:
-> man mp
+$ man mp
 
 To run MP:
-> mp music-files
+$ mp music-files
