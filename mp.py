@@ -5,20 +5,20 @@ mediaFileExtensions = ['flac', 'mp3', 'ogg'] # use lower case only
 assert 'm3u' not in mediaFileExtensions
 restartFilename = '.mp-restart'
 separator = '### skip the following songs ###'
+skip = []
+restartArgs = []
+restartOptions = []
+
+# Imports {{{1
+from cmdline import CommandLineProcessor
+from kskutils import conjoin, wrap
+from fileutils import exists, remove, getExt
+import sys
 
 # Process command line {{{1
 # Command line processing must be performed before importing gstreamer otherwise
 # it tries to handle the command line options.
-from cmdline import CommandLineProcessor
-from kskutils import conjoin, wrap
-from fileutils import exists, remove
-import sys
-
-skip = []
-restartArgs = []
-restartOptions = []
 cmdLine = sys.argv
-
 if len(cmdLine) == 1:
     # Command line is empty, try to restart
     try:
@@ -64,15 +64,21 @@ opt.setSummary(wrap(['''\
     Shuffle songs.
     If combined with repeat, the songs will be shuffled before each repeat.
 ''']))
+opt = clp.addOption(key='playlist', shortName='p', longName='playlist')
+opt.setNumArgs(1, '<filename.m3u>')
+opt.setSummary(wrap(['''{\
+    Generate a playlist from the music specified rather than play the music.
+}''']))
 opt = clp.addOption(
     key='help', shortName='h', longName='help', action=clp.printHelp
 )
 clp.process()
 opts = clp.getOptions()
 args = clp.getArguments()
-quiet = 'quiet' in clp.getOptions()
-repeat = 'repeat' in clp.getOptions()
-shuffle = 'shuffle' in clp.getOptions()
+quiet = 'quiet' in opts
+repeat = 'repeat' in opts
+shuffle = 'shuffle' in opts
+playlist = opts.get('playlist', None)
 
 # Player class {{{1
 # import gstreamer
@@ -129,6 +135,10 @@ class Player:
                 if not self.quiet:
                     print "%s: no such file or directory." % path
 
+    def writePlaylist(self, filename):
+        with open(filename, 'w') as playlist:
+            playlist.write('\n'.join(self.songs))
+
     def addSkips(self, paths):
         self.skip = paths
 
@@ -162,6 +172,20 @@ class Player:
 import thread, gobject, glib
 player = Player(quiet)
 player.addSongs(args)
+if playlist:
+    playlist = playlist[0]
+    if not getExt(playlist):
+        playlist += '.m3u'
+    player.writePlaylist(playlist)
+    print "Playlist written to '%s'." % playlist
+    print wrap(["""\
+        To create a tar file that contains the playlist and the music files it
+        references, run:
+    """])
+    print "    tar zcfT %s.tgz %s %s" % (
+        playlist.rsplit('.')[0], playlist, playlist
+    )
+    exit()
 player.addSkips(skip)
 
 # Run the player {{{1
