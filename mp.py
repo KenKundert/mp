@@ -66,9 +66,9 @@ opt.setSummary(wrap(['''\
 ''']))
 opt = clp.addOption(key='playlist', shortName='p', longName='playlist')
 opt.setNumArgs(1, '<filename.m3u>')
-opt.setSummary(wrap(['''{\
+opt.setSummary(wrap(['''\
     Generate a playlist from the music specified rather than play the music.
-}''']))
+''']))
 opt = clp.addOption(
     key='help', shortName='h', longName='help', action=clp.printHelp
 )
