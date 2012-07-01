@@ -1,6 +1,18 @@
 # Imports {{{1
 import types as Types
 import re as RE
+import textwrap
+
+# Utilities {{{1
+# Strip Enclosing Braces {{{2
+def _stripEnclosingBraces(text, stripBraces):
+    if not stripBraces:
+        return text
+    leadingIndex = 1 if text[0] == '{' else 0
+    if text[-1] == '}':
+        return text[leadingIndex:-1]
+    else:
+        return text[leadingIndex:]
 
 # cull {{{1
 # Cull Nones out of a list
@@ -418,10 +430,17 @@ def title(text, level=2, overline=False, newline=True):
     return '\n'.join(result)
 
 # wrap {{{1
-def wrap(paragraphs):
-    r"""
+def wrap(paragraphs, stripBraces=True):
+    r"""{
     Accept a list of paragraphs and return a string with each paragraph dedented
     and wrapped.
+
+    It is a personal convention to use '''{ to start a long comment and }''' to
+    end it because my vim color rules are trained to recognize this as a
+    and this comment is more reliable than simply using ''' (because vim cannot
+    tell by looking at a small section of text whether the comment is starting
+    or ending. Thus, by default, this command removes leading and trailing
+    braces.
 
     Examples:
     >>> print wrap(['    Hello', '    World!'])
@@ -429,12 +448,77 @@ def wrap(paragraphs):
     <BLANKLINE>
     World!
 
-    """
-    from textwrap import dedent, fill
+    >>> print wrap(['{    Hello}', '{    World!}'])
+    Hello
+    <BLANKLINE>
+    World!
+
+    >>> print wrap(['{    Hello}', '{    World!}'], False)
+    {    Hello}
+    <BLANKLINE>
+    {    World!}
+
+    }"""
     return '\n\n'.join([
-        fill(dedent(each)) for each in paragraphs
+        textwrap.fill(
+            textwrap.dedent(
+                _stripEnclosingBraces(
+                    each, stripBraces
+                )
+            )
+        ) for each in paragraphs
     ])
 
+# dedent {{{1
+def dedent(text, stripBraces=True):
+    r"""{
+    Remove common indentation.
+
+    It is a personal convention to use '''{ to start a long comment and }''' to
+    end it because my vim color rules are trained to recognize this as a
+    and this comment is more reliable than simply using ''' (because vim cannot
+    tell by looking at a small section of text whether the comment is starting
+    or ending. Thus, by default, this command removes leading and trailing
+    braces.
+
+    Examples:
+    >>> print dedent('''\
+    ...     Hello
+    ...     World!
+    ... ''')
+    Hello
+    World!
+    <BLANKLINE>
+
+    >>> print dedent('''{\
+    ...     Hello
+    ...     World!
+    ... }''')
+    Hello
+    World!
+    <BLANKLINE>
+
+    >>> print dedent('''{\
+    ...     Hello
+    ...     World!
+    ... }''', False)
+    {    Hello
+        World!
+    }
+
+    }"""
+    return textwrap.dedent(
+        _stripEnclosingBraces(
+            text, stripBraces
+        )
+    )
+
+# Tests are run from ./test
+#if __name__ == "__main__":
+#    import doctest
+#    doctest.testmod()
+
+# vi:ai:sw=4:sts=4:et:ff=unix
 # Tests are run from ./test
 #if __name__ == "__main__":
 #    import doctest

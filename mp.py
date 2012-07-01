@@ -1,19 +1,16 @@
 #!/usr/bin/env python
 
-# Globals {{{1
-mediaFileExtensions = ['flac', 'mp3', 'ogg'] # use lower case only
-assert 'm3u' not in mediaFileExtensions
-restartFilename = '.mp-restart'
-separator = '### skip the following songs ###'
-skip = []
-restartArgs = []
-restartOptions = []
-
 # Imports {{{1
+from config import mediaFileExtensions, restartFilename, separator
 from cmdline import CommandLineProcessor
 from kskutils import conjoin, wrap
 from fileutils import exists, remove, getExt
 import sys
+
+# Globals {{{1
+skip = []
+restartArgs = []
+restartOptions = []
 
 # Process command line {{{1
 # Command line processing must be performed before importing gstreamer otherwise

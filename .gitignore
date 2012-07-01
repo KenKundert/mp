@@ -12,6 +12,8 @@ var
 sdist
 develop-eggs
 .installed.cfg
+.mp-restart
+mp.1
 
 # Installer logs
 pip-log.txt

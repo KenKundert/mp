@@ -1,4 +1,5 @@
 from distutils.core import setup
+import manpage # importing manpage has the side effect of creating nroff version
 
 longDescription='''
 Music player.
@@ -12,7 +13,7 @@ setup(
   , author="Ken Kundert"
   , author_email='mp@shalmirane.com'
   , scripts=['mp']
-  , py_modules=['mp', 'cmdline', 'fileutils', 'kskutils']
+  , py_modules=['mp', 'config', 'cmdline', 'fileutils', 'kskutils']
   , data_files=[
         ('man/man1', ['mp.1'])
     ]
