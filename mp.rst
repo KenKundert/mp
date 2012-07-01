@@ -8,10 +8,11 @@ music player
 
 :Author: Ken Kundert <mp@shalmirane.com>
 :Date: {date}
-:Copyright: public domain
 :Version: {version}
 :Manual section: 1
-:Manual group: Multimedia
+
+.. :Copyright: public domain
+.. :Manual group: Multimedia
 
 SYNOPSIS
 ========
