@@ -6,7 +6,7 @@ import textwrap
 # Utilities {{{1
 # Strip Enclosing Braces {{{2
 def _stripEnclosingBraces(text, stripBraces):
-    if not stripBraces:
+    if not stripBraces or len(text) <= 2:
         return text
     leadingIndex = 1 if text[0] == '{' else 0
     if text[-1] == '}':
@@ -513,12 +513,6 @@ def dedent(text, stripBraces=True):
         )
     )
 
-# Tests are run from ./test
-#if __name__ == "__main__":
-#    import doctest
-#    doctest.testmod()
-
-# vi:ai:sw=4:sts=4:et:ff=unix
 # Tests are run from ./test
 #if __name__ == "__main__":
 #    import doctest
