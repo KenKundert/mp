@@ -10,8 +10,8 @@ python docutils and the gstreamer module and plugins with:
 If you want mp3 support, you also need to install the 'ugly' plugins from the 
 RPM Fusion non-free repository.
     yum install gstreamer-plugins-ugly
-If you do not want mp3 support, edit mp.py and remove 'mp3' from 
-mediaFileExtensions and edit mp.1 remove any reference to mp3.
+If you do not want mp3 support, edit config.py and remove 'mp3' from 
+mediaFileExtensions.
 
 To get the source code:
 $ git clone git@github.com:KenKundert/mp.git
