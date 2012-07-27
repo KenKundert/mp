@@ -6,13 +6,27 @@ import textwrap
 # Utilities {{{1
 # Strip Enclosing Braces {{{2
 def _stripEnclosingBraces(text, stripBraces):
-    if not stripBraces:
+    if not stripBraces or len(text) <= 2:
         return text
     leadingIndex = 1 if text[0] == '{' else 0
     if text[-1] == '}':
         return text[leadingIndex:-1]
     else:
         return text[leadingIndex:]
+
+# class Info {{{2
+class Info():
+    def __init__(self, **kwargs):
+        self.__dict__ = kwargs
+
+    def __str__(self):
+        return 'Info<%s>' % ', '.join(
+            ['%s=%s' % item for item in self.__dict__.iteritems()]
+        )
+    __repr__ = __str__
+
+    def __getattr__(self, name):
+        return None
 
 # cull {{{1
 # Cull Nones out of a list
@@ -513,12 +527,61 @@ def dedent(text, stripBraces=True):
         )
     )
 
-# Tests are run from ./test
-#if __name__ == "__main__":
-#    import doctest
-#    doctest.testmod()
+# indent {{{1
+def indent(text, spaces = 0):
+    r"""{
+    Add indentation.
 
-# vi:ai:sw=4:sts=4:et:ff=unix
+    Examples:
+    >>> print indent('Hello\nWorld!', 4)
+        Hello
+        World!
+
+    }"""
+    return '\n'.join([
+        spaces*' '+line if line else line for line in text.split('\n')
+    ])
+
+# redent {{{1
+def redent(text, spaces = 0, stripBraces=True):
+    r"""{
+    Remove common indentation and then apply a new indentation.
+
+    It is a personal convention to use '''{ to start a long comment and }''' to
+    end it because my vim color rules are trained to recognize this as a
+    and this comment is more reliable than simply using ''' (because vim cannot
+    tell by looking at a small section of text whether the comment is starting
+    or ending. Thus, by default, this command removes leading and trailing
+    braces.
+
+    Examples:
+    >>> print redent('''\
+    ...     Hello
+    ...     World!
+    ... ''', 8)
+            Hello
+            World!
+    <BLANKLINE>
+
+    >>> print redent('''{\
+    ...     Hello
+    ...     World!
+    ... }''', 8)
+            Hello
+            World!
+    <BLANKLINE>
+
+    >>> print redent('''{\
+    ...     Hello
+    ...     World!
+    ... }''', 8, False)
+            {    Hello
+                World!
+            }
+
+    }"""
+    return indent(dedent(text, stripBraces), spaces=spaces)
+
 # Tests are run from ./test
 #if __name__ == "__main__":
 #    import doctest
