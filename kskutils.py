@@ -527,7 +527,7 @@ def dedent(text, stripBraces=True):
         )
     )
 
-# redent {{{1
+# indent {{{1
 def indent(text, spaces = 0):
     r"""{
     Add indentation.
