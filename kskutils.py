@@ -14,6 +14,20 @@ def _stripEnclosingBraces(text, stripBraces):
     else:
         return text[leadingIndex:]
 
+# class Info {{{2
+class Info():
+    def __init__(self, **kwargs):
+        self.__dict__ = kwargs
+
+    def __str__(self):
+        return 'Info<%s>' % ', '.join(
+            ['%s=%s' % item for item in self.__dict__.iteritems()]
+        )
+    __repr__ = __str__
+
+    def __getattr__(self, name):
+        return None
+
 # cull {{{1
 # Cull Nones out of a list
 def cull(l):
@@ -512,6 +526,61 @@ def dedent(text, stripBraces=True):
             text, stripBraces
         )
     )
+
+# redent {{{1
+def indent(text, spaces = 0):
+    r"""{
+    Add indentation.
+
+    Examples:
+    >>> print indent('Hello\nWorld!', 4)
+        Hello
+        World!
+
+    }"""
+    return '\n'.join([
+        spaces*' '+line if line else line for line in text.split('\n')
+    ])
+
+# redent {{{1
+def redent(text, spaces = 0, stripBraces=True):
+    r"""{
+    Remove common indentation and then apply a new indentation.
+
+    It is a personal convention to use '''{ to start a long comment and }''' to
+    end it because my vim color rules are trained to recognize this as a
+    and this comment is more reliable than simply using ''' (because vim cannot
+    tell by looking at a small section of text whether the comment is starting
+    or ending. Thus, by default, this command removes leading and trailing
+    braces.
+
+    Examples:
+    >>> print redent('''\
+    ...     Hello
+    ...     World!
+    ... ''', 8)
+            Hello
+            World!
+    <BLANKLINE>
+
+    >>> print redent('''{\
+    ...     Hello
+    ...     World!
+    ... }''', 8)
+            Hello
+            World!
+    <BLANKLINE>
+
+    >>> print redent('''{\
+    ...     Hello
+    ...     World!
+    ... }''', 8, False)
+            {    Hello
+                World!
+            }
+
+    }"""
+    return indent(dedent(text, stripBraces), spaces=spaces)
 
 # Tests are run from ./test
 #if __name__ == "__main__":
