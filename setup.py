@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from distutils.core import setup
 import manpage # importing manpage has the side effect of creating nroff version
 
