@@ -4,6 +4,7 @@ set nonomatch
 rm -f mp.1
 rm -rf *.pyc *.pyo .*.sum
 rm -rf build .coverage .coverage-html 
+rm expected result
 foreach i (*/clean)
     if ($i == "*/clean") break
     #echo $i
