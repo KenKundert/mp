@@ -7,3 +7,4 @@ restartFilename = '.mp-restart'
 separator = '### skip the following songs ###'
 version = "1.1"
 date = "2012-07-01"
+skipSongThatWasPlayingWhenLastKilled = False

@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
 # Imports {{{1
-from config import mediaFileExtensions, restartFilename, separator
+from config import (
+    mediaFileExtensions, restartFilename, separator,
+    skipSongThatWasPlayingWhenLastKilled
+)
 from cmdline import CommandLineProcessor
 from kskutils import conjoin, wrap
 from fileutils import exists, remove, getExt
@@ -145,18 +148,21 @@ class Player:
 
     def play(self):
         import time
-        from fileutils import absPath, normPath
+        from fileutils import absPath, relPath
         for song in self.songs:
             if song in self.skip:
                 continue
-            self.played.append(song)
+            if skipSongThatWasPlayingWhenLastKilled:
+                self.played.append(song)
             self.playing = True
             if not self.quiet:
-                print normPath(song)
+                print relPath(song)
             self.player.set_property("uri", "file://" + absPath(song))
             self.player.set_state(gst.STATE_PLAYING)
             while self.playing:
                 time.sleep(1)
+            if not skipSongThatWasPlayingWhenLastKilled:
+                self.played.append(song)
         self.skip = []
         self.played = []
         time.sleep(1)
