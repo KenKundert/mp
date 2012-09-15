@@ -1,4 +1,4 @@
-import os
+import os, errno
 from fnmatch import fnmatch
 
 """Various utilities for interacting with files and directories."""
@@ -200,7 +200,7 @@ def getExt(path):
     ext = os.path.splitext(path)[1]
     return ext[1:] if ext else ''
 
-# Copy and Move Utilities {{{1
+# Copy, Move, Remove Utilities {{{1
 def copy(src, dest):
     """
     Copy either a file or a directory.
@@ -244,6 +244,16 @@ def remove(path):
             else:
                 os.remove(path)
         except (IOError, OSError), err:
+            exit("%s: %s." % (err.filename, err.strerror))
+
+def mkdir(path):
+    """
+    Create a directory if it does not exist. If it does, return without complaint.
+    """
+    try:
+        os.makedirs(path)
+    except (IOError, OSError), err:
+        if err.errno != errno.EEXIST:
             exit("%s: %s." % (err.filename, err.strerror))
 
 # Execute Utilities {{{1

@@ -6,7 +6,7 @@
 music player
 ------------
 
-:Author: Ken Kundert <mp@shalmirane.com>
+:Author: Ken Kundert <mp@nurdletech.com>
 :Date: {date}
 :Version: {version}
 :Manual section: 1

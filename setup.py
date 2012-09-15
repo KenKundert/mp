@@ -12,7 +12,7 @@ setup(
   , description='music player'
   , long_description=longDescription
   , author="Ken Kundert"
-  , author_email='mp@shalmirane.com'
+  , author_email='mp@nurdletech.com'
   , scripts=['mp']
   , py_modules=['mp', 'config', 'cmdline', 'fileutils', 'kskutils']
   , data_files=[
