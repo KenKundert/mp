@@ -20,9 +20,9 @@ class Info():
         self.__dict__ = kwargs
 
     def __str__(self):
-        return 'Info<%s>' % ', '.join(
+        return '%s<%s>' % (self.__class__.__name__, ', '.join(
             ['%s=%s' % item for item in self.__dict__.iteritems()]
-        )
+        ))
     __repr__ = __str__
 
     def __getattr__(self, name):
