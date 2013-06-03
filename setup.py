@@ -3,7 +3,7 @@ from distutils.core import setup
 import manpage # importing manpage has the side effect of creating nroff version
 
 longDescription='''
-Music player.
+Simple music player.
 '''
 
 setup(
@@ -19,4 +19,5 @@ setup(
         ('man/man1', ['mp.1'])
     ]
   , platforms=['rhel']
+  , use_2to3=True
 )

@@ -2,8 +2,10 @@
 
 set nonomatch
 rm -f mp.1
-rm -rf *.pyc *.pyo .*.sum
-rm -rf build .coverage .coverage-html 
+
+# the rest is common to all python directories
+rm -f *.pyc *.pyo .test*.sum expected result
+rm -rf build *.egg-info dist __pycache__ .coverage .coverage-html 
 foreach i (*/clean)
     if ($i == "*/clean") break
     #echo $i
