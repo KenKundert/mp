@@ -26,7 +26,7 @@ class Info():
     __repr__ = __str__
 
     def __getattr__(self, name):
-        return None
+        return self.__dict__[name]
 
 # cull {{{1
 # Cull Nones out of a list
