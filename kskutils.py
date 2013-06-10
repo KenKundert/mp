@@ -26,7 +26,10 @@ class Info():
     __repr__ = __str__
 
     def __getattr__(self, name):
-        return self.__dict__[name]
+        try:
+            return self.__dict__[name]
+        except KeyError:
+            raise AttributeError
 
 # cull {{{1
 # Cull Nones out of a list
