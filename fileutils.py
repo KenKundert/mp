@@ -262,11 +262,11 @@ def move(src, dest):
     except shutil.Error as err:
         exit(["%s to %s: %s." % arg for arg in err.args])
 
-def remove(path):
+def remove(path, exitUponError=True):
     """
     Remove either a file or a directory.
     """
-    # if exists(path): # do not test for existance, this will causes misdirected symlinks to be ignored
+    # if exists(path): # do not test for existence, this will causes misdirected symlinks to be ignored
     try:
         if isDir(path):
             import shutil
@@ -276,7 +276,10 @@ def remove(path):
     except (IOError, OSError) as err:
         # don't complain if the file never existed
         if err.errno != errno.ENOENT:
-            exit("%s: %s." % (err.filename, err.strerror))
+            if exitUponError:
+                exit("%s: %s." % (err.filename, err.strerror))
+            else:
+                raise
 
 def makeLink(src, dest):
     """
