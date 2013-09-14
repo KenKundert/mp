@@ -258,17 +258,14 @@ class Player:
                 elif ext == 'm3u':
                     with open(path) as playlist:
                         self.addSongs(playlist, getHead(path))
+                elif exists(path):
+                    if not self.quiet:
+                        print "%s: skipping descriptor of unknown type." % path
                 else:
                     if not self.quiet:
-                        print "%s: skipping file of unknown type." % path
+                        print "%s: no such file or directory." % path
             elif isDir(path):
                 self.addSongs(sorted(getAll(makePath(path, '*'))))
-            elif exists(path):
-                if not self.quiet:
-                    print "%s: skipping descriptor of unknown type." % path
-            else:
-                if not self.quiet:
-                    print "%s: no such file or directory." % path
 
     def writePlaylist(self, filename):
         with open(filename, 'w') as playlist:
