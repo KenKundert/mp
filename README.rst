@@ -8,7 +8,7 @@ lists.
 Tested with Python version 2.7 under Fedora Linux. You will need install the 
 docutils, gstreamer, mutagen packages for python with::
 
-    yum install python-docutils gstreamer-python gstreamer-plugins-good mutagen
+    yum install python-docutils gstreamer-python gstreamer-plugins-good python-mutagen
 
 If you want mp3 support, you also need to install the 'ugly' plugins from the 
 RPM Fusion non-free repository::
