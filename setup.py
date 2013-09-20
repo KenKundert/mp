@@ -19,4 +19,5 @@ setup(
     ]
   , platforms=['rhel']
   , use_2to3=True
+  , license='GPLv3'
 )
