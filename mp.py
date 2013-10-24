@@ -23,12 +23,18 @@ from config import (
 )
 from cmdline import CommandLineProcessor
 from kskutils import conjoin, wrap
-from fileutils import exists, remove, getExt, absPath, relPath
+from fileutils import exists, remove, getExt, absPath, relPath, expandPath
 import sys
 
 # Globals {{{1
+now_playing_file = '~/.nowplaying'
+    # if now_playing_file is set, the artist and song title will be placed in 
+    # that file while that song is playing.
 skip = []
 restartArgs = []
+
+# process the globals
+now_playing_file = expandPath(now_playing_file)
 
 # Process command line {{{1
 # Command line processing must be performed before importing gstreamer otherwise
@@ -186,6 +192,17 @@ class MetaData:
         else:
             return self.filename
 
+    def now_playing(self):
+        if now_playing_file:
+            out = []
+            for each in [self.artist, self.title]:
+                out += [each]
+            try:
+                with open(now_playing_file, 'w') as f:
+                    f.write(' - '.join(out))
+            except IOError, err:
+                exit("%s: %s." % (err.filename, err.strerror))
+
     def _getEasyMetadata(self, metadata):
         self.artist = metadata.get('artist', [None])[0]
         self.album = metadata.get('album', [None])[0]
@@ -289,6 +306,7 @@ class Player:
             if not self.quiet:
                 metadata = MetaData(song)
                 print metadata.summary()
+                metadata.now_playing()
             self.player.set_property("uri", "file://" + absPath(song))
             self.player.set_state(gst.STATE_PLAYING)
             while self.playing:
@@ -342,8 +360,10 @@ except KeyboardInterrupt:
         print "%s: killed at user request." % clp.progName()
     songsAlreadyPlayed = player.songsAlreadyPlayed()
 
-# write out restart information
 try:
+    if now_playing_file:
+        remove(now_playing_file)
+    # write out restart information
     with open(restartFilename, 'w') as restartFile:
         restartFile.write('\n'.join(cmdLine[1:]) + '\n')
         restartFile.write(separator + '\n')
