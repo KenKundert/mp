@@ -1,4 +1,5 @@
 # Imports {{{1
+from __future__ import division, print_function
 import types as Types
 import re as RE
 import textwrap
@@ -130,7 +131,7 @@ def examine( obj
     all of its contents.
 
     Examples:
-    >>> print examine([0, 1, 2, 'toothpaste'], 'numbers', addr=False)
+    >>> print(examine([0, 1, 2, 'toothpaste'], 'numbers', addr=False))
     numbers = [
         [0] = 0 (int)
         [1] = 1 (int)
@@ -138,7 +139,7 @@ def examine( obj
         [3] = "toothpaste" (string)
     ] (list)
 
-    >>> print examine({0: 'zero', 1: 'one'}, 'binary numbers', addr=False)
+    >>> print(examine({0: 'zero', 1: 'one'}, 'binary numbers', addr=False))
     binary numbers = {
         0 : "zero" (string)
         1 : "one" (string)
@@ -168,25 +169,25 @@ def examine( obj
     alreadySeen.add(id(obj))
 
     # Simple types
-    if type(obj) == Types.NoneType:
+    if obj is None:
         contents += ['%s%s%s' % (firstShift, nameEquals, str(obj))]
-    elif type(obj) == Types.BooleanType:
+    elif type(obj) == type(False):
         contents += ['%s%s%s' % (firstShift, nameEquals, str(obj))]
-    elif type(obj) == Types.IntType:
+    elif type(obj) == type(0):
         contents += ['%s%s%s (int)' % (firstShift, nameEquals, str(obj))]
-    elif type(obj) == Types.LongType:
-        contents += ['%s%s%s (long)' % (firstShift, nameEquals, str(obj))]
-    elif type(obj) == Types.FloatType:
+    #elif type(obj) == type(0L):
+    #    contents += ['%s%s%s (long)' % (firstShift, nameEquals, str(obj))]
+    elif type(obj) == type(0.0):
         contents += ['%s%s%s (real)' % (firstShift, nameEquals, str(obj))]
-    elif type(obj) == Types.ComplexType:
+    elif type(obj) == type(0j):
         contents += ['%s%s%s (complex)' % (firstShift, nameEquals, str(obj))]
-    elif type(obj) == Types.StringType:
+    elif type(obj) == type(""):
         contents += ['%s%s"%s" (string)' % (firstShift, nameEquals, str(obj))]
-    elif type(obj) == Types.UnicodeType:
+    elif type(obj) == type(u""):
         contents += ['%s%s"%s" (unicode)' % (firstShift, nameEquals, str(obj))]
 
     # Hierarchical types
-    elif type(obj) == Types.TupleType:
+    elif type(obj) == type(()):
         if len(obj) == 0 or levels <= 0:
             skipped = '' if levels > 0 else ' <<skipped>> '
             if name != None:
@@ -208,8 +209,11 @@ def examine( obj
                 )]
             if name != None:
                 contents += ['%s) (tuple%s)' % (shift, address)]
-    elif type(obj) in [Types.ListType, Types.GeneratorType]:
-        listtype = 'generated ' if type(obj) == Types.GeneratorType else ''
+    elif type(obj) == type([]):
+        # I used to test for generators here, but I could not figure out how to
+        # do this easily in python3.
+        #listtype = 'generated ' if type(obj) == Types.GeneratorType else ''
+        listtype = ''
         if len(obj) == 0 or levels <= 0:
             skipped = '' if levels > 0 else ' <<skipped>> '
             if name != None:
@@ -231,7 +235,7 @@ def examine( obj
                 )]
             if name != None:
                 contents += ['%s] (%slist%s)' % (shift, listtype, address)]
-    elif type(obj) == Types.DictType:
+    elif type(obj) == type({}):
         if len(obj.keys()) == 0 or levels <= 0:
             skipped = '' if levels > 0 else ' <<skipped>> '
             if name != None:
@@ -312,7 +316,7 @@ def examine( obj
             contents += ['%s> (%s)' % (shift, insttype)]
     else:
         # this case handles None plus all the unprintable types
-        if type(obj) == Types.NoneType or all:
+        if obj is None or all:
             contents += ['%s%s%s' % (firstShift, nameEquals, str(obj))]
     # this still does not handle new-style classes, which are essentially user
     # defined types
@@ -329,7 +333,7 @@ def toStr(obj, level = 0):
     all of its contents.
 
     Examples:
-    >>> print 'procedure =', toStr([0, 1, 2, 'toothpaste'])
+    >>> print('procedure =', toStr([0, 1, 2, 'toothpaste']))
     procedure = [
         0,
         1,
@@ -337,13 +341,13 @@ def toStr(obj, level = 0):
         'toothpaste',
     ]
 
-    >>> print 'boolean =', toStr({0: 'zero', 1: 'one'})
+    >>> print('boolean =', toStr({0: 'zero', 1: 'one'}))
     boolean = {
         0: 'zero',
         1: 'one',
     }
 
-    >>> print 'set =', toStr(set(['heads', 'tails']))
+    >>> print('set =', toStr(set(['heads', 'tails'])))
     set = set([
         'heads',
         'tails',
@@ -354,7 +358,7 @@ def toStr(obj, level = 0):
     >>> x=Foo()
     >>> x.bar = 'bar'
     >>> x.baz = 'baz'
-    >>> print 'foo =', toStr(x)
+    >>> print('foo =', toStr(x))
     foo = instance of kskutils.Foo:
         bar = 'bar'
         baz = 'baz'
@@ -393,7 +397,7 @@ def toStr(obj, level = 0):
             )]
         output += ['%s])' % indent(0)]
     elif hasattr(obj, '__dict__'):
-        if type(obj) == types.InstanceType:
+        if isinstance(obj, object):
             output += ['instance of %s:' % obj.__class__]
         else:
             output += [str(obj.__class__)]
@@ -413,20 +417,20 @@ def title(text, level=2, overline=False, newline=True):
     overline.
 
     Examples:
-    >>> print title('Hello World!')
+    >>> print(title('Hello World!'))
     <BLANKLINE>
     Hello World!
     ============
 
-    >>> print title('Hello World!', 3, newline=False)
+    >>> print(title('Hello World!', 3, newline=False))
     Hello World!
     ------------
 
-    >>> print title('Hello World!', '~', newline=False)
+    >>> print(title('Hello World!', '~', newline=False))
     Hello World!
     ~~~~~~~~~~~~
 
-    >>> print title('Hello World!', 0, True, False)
+    >>> print(title('Hello World!', 0, True, False))
     ############
     Hello World!
     ############
@@ -460,17 +464,17 @@ def wrap(paragraphs, stripBraces=True):
     braces.
 
     Examples:
-    >>> print wrap(['    Hello', '    World!'])
+    >>> print(wrap(['    Hello', '    World!']))
     Hello
     <BLANKLINE>
     World!
 
-    >>> print wrap(['{    Hello}', '{    World!}'])
+    >>> print(wrap(['{    Hello}', '{    World!}']))
     Hello
     <BLANKLINE>
     World!
 
-    >>> print wrap(['{    Hello}', '{    World!}'], False)
+    >>> print(wrap(['{    Hello}', '{    World!}'], False))
     {    Hello}
     <BLANKLINE>
     {    World!}
@@ -499,26 +503,26 @@ def dedent(text, stripBraces=True):
     braces.
 
     Examples:
-    >>> print dedent('''\
+    >>> print(dedent('''\
     ...     Hello
     ...     World!
-    ... ''')
+    ... '''))
     Hello
     World!
     <BLANKLINE>
 
-    >>> print dedent('''{\
+    >>> print(dedent('''{\
     ...     Hello
     ...     World!
-    ... }''')
+    ... }'''))
     Hello
     World!
     <BLANKLINE>
 
-    >>> print dedent('''{\
+    >>> print(dedent('''{\
     ...     Hello
     ...     World!
-    ... }''', False)
+    ... }''', False))
     {    Hello
         World!
     }
@@ -536,7 +540,7 @@ def indent(text, spaces = 0):
     Add indentation.
 
     Examples:
-    >>> print indent('Hello\nWorld!', 4)
+    >>> print(indent('Hello\nWorld!', 4))
         Hello
         World!
 
@@ -558,26 +562,26 @@ def redent(text, spaces = 0, stripBraces=True):
     braces.
 
     Examples:
-    >>> print redent('''\
+    >>> print(redent('''\
     ...     Hello
     ...     World!
-    ... ''', 8)
+    ... ''', 8))
             Hello
             World!
     <BLANKLINE>
 
-    >>> print redent('''{\
+    >>> print(redent('''{\
     ...     Hello
     ...     World!
-    ... }''', 8)
+    ... }''', 8))
             Hello
             World!
     <BLANKLINE>
 
-    >>> print redent('''{\
+    >>> print(redent('''{\
     ...     Hello
     ...     World!
-    ... }''', 8, False)
+    ... }''', 8, False))
             {    Hello
                 World!
             }

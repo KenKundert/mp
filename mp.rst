@@ -32,7 +32,7 @@ Use Ctrl-Z to pause and 'fg' to continue. Use Ctrl-C when running to kill.
 OPTIONS
 =======
 
--1, --quiet     Do not print name of the music file being played.
+-q, --quiet     Do not print name of the music file being played.
 -r, --repeat    Repeat songs.
 -s, --shuffle   Shuffle songs.  If combined with repeat, the songs will be
                 shuffled before each repeat.
@@ -43,3 +43,6 @@ OPTIONS
 If invoked with no arguments or options ``mp`` will repeat the session that was 
 previously run in the same directory, skipping any songs that had already been 
 played.
+
+The artist and title of the currently playing song is available from 
+~/.nowplaying.
