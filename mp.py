@@ -22,7 +22,7 @@ from config import (
     skipSongThatWasPlayingWhenLastKilled
 )
 from cmdline import CommandLineProcessor
-from kskutils import conjoin, wrap
+from kskutils import conjoin, wrap, cull
 from fileutils import exists, remove, getExt, absPath, relPath, expandPath
 import sys
 
@@ -199,7 +199,7 @@ class MetaData:
                 out += [each]
             try:
                 with open(now_playing_file, 'w') as f:
-                    f.write(' - '.join(out))
+                    f.write(' - '.join(cull(out)))
             except IOError, err:
                 exit("%s: %s." % (err.filename, err.strerror))
 
