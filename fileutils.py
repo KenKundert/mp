@@ -384,3 +384,4 @@ def which(name, flags=os.X_OK):
             result.append(p)
     return result
 
+# vim: set sw=4 sts=4 et:
