@@ -1,7 +1,7 @@
 #!/bin/csh -f
 
 set nonomatch
-rm -f mp.1
+rm -f mp.1 mp.1.rst
 
 # the rest is common to all python directories
 rm -f *.pyc *.pyo .test*.sum expected result install.out
