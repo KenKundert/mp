@@ -1,5 +1,6 @@
 from setuptools import setup
-import manpage # importing manpage has the side effect of creating nroff version
+import manpage
+manpage.write()  # generate the nroff version of the manpage
 
 longDescription='''
 Simple music player.

@@ -319,53 +319,92 @@ class ExecuteError(Exception):
         )
         return "%s: %s." % (filename, self.error)
 
-# Execute: Runs a shell command ignoring streams {{{2
-def execute(cmd, accept = (0,), shell=True):
-    """
-    Execute a command. Raise an ExecuteError if exit status is not in accept.
-    If accept is True, all exit status values are accepted.
-    """
-    import subprocess
-    try:
-        status = subprocess.call(cmd, shell=shell)
-    except (IOError, OSError) as err:
-        raise ExecuteError(cmd, err.filename, err.strerror)
-    if accept is not True and status not in accept:
-        raise ExecuteError(cmd, "unexpected exit status (%d)" % status)
-    return status
+class Execute():
+    def __init__(self, cmd, accept=(0,), stdin='', shell=False):
+        """
+        Execute a command and capture its output
 
-# Pipe: Runs a shell command with access to streams {{{2
-def pipe(cmd, stdin = '', accept = (0,), shell=True):
+        Raise an ExecuteError if return status is not in accept unless accept
+        is set to True. By default, only a status of 0 is accepted.
+        All output is captured and is available from self.status, self.stdout, 
+        and self.stderr.
+        The default is to not use a shell to execute a command (safer).
+        """
+        self._run(cmd, accept, stdin, shell)
+
+    def _run(self, cmd, accept, stdin, shell):
+        try:
+            import subprocess
+            process = subprocess.Popen(
+                cmd, shell=shell,
+                stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+        except (IOError, OSError) as err:
+            raise ExecuteError(cmd, err.filename, err.strerror)
+        process.stdin.write(stdin.encode('utf-8'))
+        process.stdin.close()
+        self.stdout = process.stdout.read().decode('utf-8')
+        self.stderr = process.stderr.read().decode('utf-8')
+        self.status = process.wait()
+        process.stdout.close()
+        process.stderr.close()
+        if accept is not True and self.status not in accept:
+            if self.stderr:
+                raise ExecuteError(cmd, self.stderr, showCmd=True)
+            else:
+                raise ExecuteError(
+                    cmd,
+                    "unexpected exit status (%d)" % self.status, showCmd=True)
+
+
+class ShellExecute(Execute):
+    def __init__(self, cmd, accept=(0,), stdin='', shell=True):
+        """
+        Execute a command in a shell and capture its output
+
+        Raise an ExecuteError if return status is not in accept unless accept
+        is set to True. By default, only a status of 0 is accepted.
+        All output is captured and is available from self.status, self.stdout, 
+        and self.stderr.
+        The default is to use a shell to execute a command (more convenient).
+        """
+        self._run(cmd, accept, stdin, True)
+
+
+def execute(cmd, accept=(0,), stdin='', shell=False):
     """
-    Execute a command and returns the exit status and stdout as a string.
-    Raise an ExecuteError if return status is not in accept unless accept is set
-    to True. Only a status of 0 will be accepted if None is passed as the value
-    of accept.
+    Execute a command without capturing its output
+
+    Raise an ExecuteError if return status is not in accept unless accept
+    is set to True. By default, only a status of 0 is accepted. The default is 
+    to not use a shell to execute a command (safer).
     """
-    import subprocess
     try:
-        process = subprocess.Popen(
-            cmd, shell=shell,
-            stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
-        )
+        import subprocess
+        process = subprocess.Popen(cmd, shell=shell, stdin=subprocess.PIPE)
     except (IOError, OSError) as err:
         raise ExecuteError(cmd, err.filename, err.strerror)
     process.stdin.write(stdin.encode('utf-8'))
     process.stdin.close()
-    stdout = process.stdout.read().decode('utf-8')
-    stderr = process.stderr.read().decode('utf-8')
     status = process.wait()
-    process.stdout.close()
-    process.stderr.close()
     if accept is not True and status not in accept:
-        if stderr:
-            raise ExecuteError(cmd, stderr)
-        else:
-            raise ExecuteError(cmd, "unexpected exit status (%d)" % status)
-    return (status, stdout)
+        raise ExecuteError(
+            cmd,
+            "unexpected exit status (%d)" % status, showCmd=True)
+    return status
 
-# Which: Search path for executable files with given name {{{2
+def shellExecute(cmd, accept=(0,), stdin='', shell=True):
+    """
+    Execute a command without capturing its output
+
+    Raise an ExecuteError if return status is not in accept unless accept
+    is set to True. By default, only a status of 0 is accepted. The default is 
+    to use a shell to execute a command (more convenient).
+    """
+    return execute(cmd, accept, stdin, shell=True)
+
+
 def which(name, flags=os.X_OK):
     """Search PATH for executable files with the given name.
 
