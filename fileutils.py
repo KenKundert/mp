@@ -320,7 +320,7 @@ class ExecuteError(Exception):
         return "%s: %s." % (filename, self.error)
 
 class Execute():
-    def __init__(self, cmd, accept=(0,), stdin='', shell=False):
+    def __init__(self, cmd, accept=(0,), stdin=None, shell=False):
         """
         Execute a command and capture its output
 
@@ -329,21 +329,25 @@ class Execute():
         All output is captured and is available from self.status, self.stdout, 
         and self.stderr.
         The default is to not use a shell to execute a command (safer).
+        If stdin is None, no connection is made to the standard input, otherwise 
+        stdin is expected to be a string and that string.
         """
         self._run(cmd, accept, stdin, shell)
 
     def _run(self, cmd, accept, stdin, shell):
+        import subprocess
+        streams = {'stdin': subprocess.PIPE} if stdin is not None else {}
         try:
-            import subprocess
             process = subprocess.Popen(
                 cmd, shell=shell,
-                stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                **streams
             )
         except (IOError, OSError) as err:
             raise ExecuteError(cmd, err.filename, err.strerror)
-        process.stdin.write(stdin.encode('utf-8'))
-        process.stdin.close()
+        if stdin is not None:
+            process.stdin.write(stdin.encode('utf-8'))
+            process.stdin.close()
         self.stdout = process.stdout.read().decode('utf-8')
         self.stderr = process.stderr.read().decode('utf-8')
         self.status = process.wait()
@@ -359,7 +363,7 @@ class Execute():
 
 
 class ShellExecute(Execute):
-    def __init__(self, cmd, accept=(0,), stdin='', shell=True):
+    def __init__(self, cmd, accept=(0,), stdin=None, shell=True):
         """
         Execute a command in a shell and capture its output
 
@@ -372,21 +376,25 @@ class ShellExecute(Execute):
         self._run(cmd, accept, stdin, True)
 
 
-def execute(cmd, accept=(0,), stdin='', shell=False):
+def execute(cmd, accept=(0,), stdin=None, shell=False):
     """
     Execute a command without capturing its output
 
     Raise an ExecuteError if return status is not in accept unless accept
     is set to True. By default, only a status of 0 is accepted. The default is 
     to not use a shell to execute a command (safer).
+    If stdin is None, no connection is made to the standard input, otherwise 
+    stdin is expected to be a string and that string.
     """
+    import subprocess
+    streams = {'stdin': subprocess.PIPE} if stdin is not None else {}
     try:
-        import subprocess
-        process = subprocess.Popen(cmd, shell=shell, stdin=subprocess.PIPE)
+        process = subprocess.Popen(cmd, shell=shell, **streams)
     except (IOError, OSError) as err:
         raise ExecuteError(cmd, err.filename, err.strerror)
-    process.stdin.write(stdin.encode('utf-8'))
-    process.stdin.close()
+    if stdin is not None:
+        process.stdin.write(stdin.encode('utf-8'))
+        process.stdin.close()
     status = process.wait()
     if accept is not True and status not in accept:
         raise ExecuteError(
@@ -394,7 +402,7 @@ def execute(cmd, accept=(0,), stdin='', shell=False):
             "unexpected exit status (%d)" % status, showCmd=True)
     return status
 
-def shellExecute(cmd, accept=(0,), stdin='', shell=True):
+def shellExecute(cmd, accept=(0,), stdin=None, shell=True):
     """
     Execute a command without capturing its output
 

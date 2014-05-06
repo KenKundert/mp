@@ -114,6 +114,26 @@ def conjoin(lst, conj=' and ', sep=', '):
         lst = lst[0:-2] + [lst[-2] + conj + lst[-1]]
     return sep.join(lst)
 
+# listjoin {{{1
+# Like join, but result is a list
+def listjoin(items, sep):
+    """
+    List Join
+    Return a list where the items of the provided list are interleaved with 
+    copies of the separator.
+
+    Examples:
+    >>> listjoin([], ' or ')
+    []
+
+    >>> listjoin(['a', 'b', 'c'], ':')
+    ['a', ':', 'b', ':', 'c']
+
+    """
+    out = (2*len(items)-1)*[sep]
+    out[::2] = items
+    return out
+
 # examine {{{1
 def examine( obj
     , name = None
@@ -327,30 +347,30 @@ def examine( obj
 # toStr {{{1
 # a simple replacement for examine()
 import types
-def toStr(obj, level = 0):
+def toStr(obj, name=None, verbose=False, _level=0, _seen=None):
     r"""
     Returns a string that contains a pretty-printed version of the argument and
-    all of its contents.
+    all of its contents. Tries to avoid infinite recursions.
 
     Examples:
     >>> print('procedure =', toStr([0, 1, 2, 'toothpaste']))
     procedure = [
-        0,
-        1,
-        2,
-        'toothpaste',
+        0
+        1
+        2
+        'toothpaste'
     ]
 
     >>> print('boolean =', toStr({0: 'zero', 1: 'one'}))
     boolean = {
-        0: 'zero',
-        1: 'one',
+        0: 'zero'
+        1: 'one'
     }
 
     >>> print('set =', toStr(set(['heads', 'tails'])))
     set = set([
-        'heads',
-        'tails',
+        'heads'
+        'tails'
     ])
 
     >>> class Foo:
@@ -358,55 +378,87 @@ def toStr(obj, level = 0):
     >>> x=Foo()
     >>> x.bar = 'bar'
     >>> x.baz = 'baz'
-    >>> print('foo =', toStr(x))
-    foo = instance of kskutils.Foo:
+    >>> print(toStr(x, 'my data', True)) # doctest: +ELLIPSIS
+    my data = instance of kskutils.Foo (id=...):
         bar = 'bar'
         baz = 'baz'
     """
     def indent(relativeLevel=0):
-        return (level+relativeLevel)*'    '
+        return (_level+relativeLevel)*'    '
+    def showID(obj):
+        if verbose:
+            return ' (id=%s)' % id(obj)
+        else:
+            return ''
+    if _seen == None:
+        _seen = set()
+    if name:
+        prefix = '%s = ' % name
+    else:
+        prefix = ''
+    args = (verbose, _level+1, _seen)
     output = []
     if type(obj) == dict:
-        # for an example of a version that prints dictionaries in a prespecified
-        # order, see contacts/ab.py
-        output += ['{']
-        for key, value in sorted(obj.items()):
-            output += ['%s%s: %s,' % (
-                indent(1), key.__repr__(), toStr(value, level+1)
-            )]
-        output += ['%s}' % indent(0)]
+        _seen.add(id(obj))
+        output += ['%s{' % prefix]
+        for key in sorted(obj.keys()):
+            value = obj[key]
+            if id(value) in _seen:
+                output += ['%s%r: <<recursion%s>>' % (indent(1), key, showID(value))]
+            else:
+                output += ['%s%r: %s' % (
+                    indent(1), key, toStr(value, None, *args)
+                )]
+        output += ['%s}%s' % (indent(0), showID(obj))]
     elif type(obj) == list:
-        output += ['[']
+        _seen.add(id(obj))
+        output += ['%s[' % prefix]
         for each in obj:
-            output += ['%s%s,' % (
-                indent(1), toStr(each, level+1)
-            )]
-        output += ['%s]' % indent(0)]
+            if id(each) in _seen:
+                output += ['%s<<recursion%s>>' % (indent(1), showID(each))]
+            else:
+                output += ['%s%s' % (
+                    indent(1), toStr(each, None, *args)
+                )]
+        output += ['%s]%s' % (indent(0), showID(obj))]
     elif type(obj) == tuple:
-        output += ['(']
+        _seen.add(id(obj))
+        output += ['%s(' % prefix]
         for each in obj:
-            output += ['%s%s,' % (
-                indent(1), toStr(each, level+1)
-            )]
-        output += ['%s)' % indent(0)]
+            if id(each) in _seen:
+                output += ['%s<<recursion%s>>' % (indent(1), showID(each))]
+            else:
+                output += ['%s%s' % (
+                    indent(1), toStr(each, None, *args)
+                )]
+        output += ['%s)%s' % (indent(0), showID(obj))]
     elif type(obj) == set:
-        output += ['set([']
+        _seen.add(id(obj))
+        output += ['%sset([' % prefix]
         for each in sorted(obj):
-            output += ['%s%s,' % (
-                indent(1), toStr(each, level+1)
-            )]
-        output += ['%s])' % indent(0)]
+            if id(each) in _seen:
+                output += ['%s<<recursion%s>>' % (indent(1), showID(each))]
+            else:
+                output += ['%s%s' % (
+                    indent(1), toStr(each, None, *args)
+                )]
+        output += ['%s])%s' % (indent(0), showID(obj))]
     elif hasattr(obj, '__dict__'):
-        if isinstance(obj, object):
-            output += ['instance of %s:' % obj.__class__]
+        _seen.add(id(obj))
+        if type(obj) == Types.InstanceType:
+            output += ['%sinstance of %s%s:' % (prefix, obj.__class__, showID(obj))]
         else:
-            output += [str(obj.__class__)]
+            output += ['%s%s' % (prefix, str(obj.__class__))]
         for each in sorted(obj.__dict__.keys()):
-            output += ['%s%s = %s' % (
-                indent(1), each, toStr(obj.__dict__[each], level+1)
-            )]
+            value = obj.__dict__[each]
+            if id(value) in _seen:
+                output += ['%s%s = <<recursion%s>>' % (indent(1), each, showID(value))]
+            else:
+                output += ['%s%s = %s' % (
+                    indent(1), each, toStr(value, None, *args)
+                )]
     else:
-        output += [obj.__repr__()]
+        output += [prefix + obj.__repr__()]
     return '\n'.join(output)
 
 
