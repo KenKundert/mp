@@ -169,7 +169,7 @@ def splitPath(path):
 # Return normalized path
 def normPath(path):
     """
-    Convert to an normalized path (remove redundant separators and up-level references).
+    Convert to a normalized path (remove redundant separators and up-level references).
     """
     return os.path.normpath(path)
 
@@ -320,60 +320,100 @@ class ExecuteError(Exception):
         return "%s: %s." % (filename, self.error)
 
 class Execute():
-    def __init__(self, cmd, accept=(0,), stdin=None, shell=False):
+    def __init__(
+        self, cmd, accept=(0,), stdin=None, stdout=True, stderr=True, wait=True, 
+        shell=False
+    ):
         """
         Execute a command and capture its output
 
         Raise an ExecuteError if return status is not in accept unless accept
         is set to True. By default, only a status of 0 is accepted.
-        All output is captured and is available from self.status, self.stdout, 
-        and self.stderr.
-        The default is to not use a shell to execute a command (safer).
-        If stdin is None, no connection is made to the standard input, otherwise 
-        stdin is expected to be a string and that string.
-        """
-        self._run(cmd, accept, stdin, shell)
 
-    def _run(self, cmd, accept, stdin, shell):
+        If stdin is None, no connection is made to the standard input, otherwise 
+        stdin is expected to be a string and that string is sent to stdin.
+
+        If stdout / stderr is true, stdout / stderr is captured and made 
+        avilable from self.stdout / self.stderr.
+
+        If wait is true, the run method does not return until the process ends.  
+        In this case run() does not return the status. Instead, calling wait() 
+        return the status.
+
+        Once the process is finished, the status is also available from 
+        self.status,
+
+        The default is to not use a shell to execute a command (safer).
+        """
+        self.cmd = cmd
+        self.accept = accept
+        self.save_stdout = stdout
+        self.save_stderr = stderr
+        self.wait_for_termination = wait
+        self._run(stdin, shell)
+
+    def _run(self, stdin, shell):
         import subprocess
-        streams = {'stdin': subprocess.PIPE} if stdin is not None else {}
+        streams = {}
+        if stdin is not None:
+            streams['stdin'] = subprocess.PIPE
+        if self.save_stdout:
+            streams['stdout'] = subprocess.PIPE
+        if self.save_stderr:
+            streams['stderr'] = subprocess.PIPE
         try:
             process = subprocess.Popen(
-                cmd, shell=shell,
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                **streams
+                self.cmd, shell=shell, **streams
             )
         except (IOError, OSError) as err:
-            raise ExecuteError(cmd, err.filename, err.strerror)
+            raise ExecuteError(self.cmd, err.filename, err.strerror)
         if stdin is not None:
             process.stdin.write(stdin.encode('utf-8'))
             process.stdin.close()
-        self.stdout = process.stdout.read().decode('utf-8')
-        self.stderr = process.stderr.read().decode('utf-8')
-        self.status = process.wait()
-        process.stdout.close()
-        process.stderr.close()
-        if accept is not True and self.status not in accept:
+        self.pid = process.pid
+        self.process = process
+        if self.wait_for_termination:
+            return self.wait()
+
+    def wait(self):
+        if self.save_stdout:
+            self.stdout = self.process.stdout.read().decode('utf-8')
+        else:
+             self.stderr = None
+        if self.save_stderr:
+            self.stderr = self.process.stderr.read().decode('utf-8')
+        else:
+             self.stderr = None
+        self.status = self.process.wait()
+        self.process.stdout.close()
+        self.process.stderr.close()
+        if self.accept is not True and self.status not in self.accept:
             if self.stderr:
-                raise ExecuteError(cmd, self.stderr, showCmd=True)
+                raise ExecuteError(self.cmd, self.stderr, showCmd=True)
             else:
                 raise ExecuteError(
-                    cmd,
+                    self.cmd,
                     "unexpected exit status (%d)" % self.status, showCmd=True)
+        return self.status
 
 
 class ShellExecute(Execute):
-    def __init__(self, cmd, accept=(0,), stdin=None, shell=True):
+    def __init__(
+        self, cmd, accept=(0,), stdin=None, stdout=True, stderr=True, wait=True, 
+        shell=True
+    ):
         """
         Execute a command in a shell and capture its output
 
-        Raise an ExecuteError if return status is not in accept unless accept
-        is set to True. By default, only a status of 0 is accepted.
-        All output is captured and is available from self.status, self.stdout, 
-        and self.stderr.
-        The default is to use a shell to execute a command (more convenient).
+        This class is the same as Execute, except that by default it runs the 
+        given command in a shell, which is less safe but more convenient.
         """
-        self._run(cmd, accept, stdin, True)
+        self.cmd = cmd
+        self.accept = accept
+        self.save_stdout = stdout
+        self.save_stderr = stderr
+        self.wait_for_termination = wait
+        self._run(stdin, True)
 
 
 def execute(cmd, accept=(0,), stdin=None, shell=False):
@@ -384,7 +424,7 @@ def execute(cmd, accept=(0,), stdin=None, shell=False):
     is set to True. By default, only a status of 0 is accepted. The default is 
     to not use a shell to execute a command (safer).
     If stdin is None, no connection is made to the standard input, otherwise 
-    stdin is expected to be a string and that string.
+    stdin is expected to be a string.
     """
     import subprocess
     streams = {'stdin': subprocess.PIPE} if stdin is not None else {}
@@ -411,6 +451,36 @@ def shellExecute(cmd, accept=(0,), stdin=None, shell=True):
     to use a shell to execute a command (more convenient).
     """
     return execute(cmd, accept, stdin, shell=True)
+
+
+def background(cmd, stdin=None, shell=False):
+    """
+    Execute a command in the background without capturing its output.
+
+    If stdin is None, no connection is made to the standard input, otherwise 
+    stdin is expected to be a string.
+    """
+    import subprocess
+    streams = {'stdin': subprocess.PIPE} if stdin is not None else {}
+    try:
+        process = subprocess.Popen(cmd, shell=shell, **streams)
+    except (IOError, OSError) as err:
+        raise ExecuteError(cmd, err.filename, err.strerror)
+    if stdin is not None:
+        process.stdin.write(stdin.encode('utf-8'))
+        process.stdin.close()
+    return process.pid
+
+def shellBackground(cmd, stdin=None, shell=True):
+    """
+    Execute a command in the background without capturing its output.
+
+    If stdin is None, no connection is made to the standard input, otherwise 
+    stdin is expected to be a string.
+
+    The default is to use a shell to execute a command (more convenient).
+    """
+    return execute(cmd, stdin, shell=True)
 
 
 def which(name, flags=os.X_OK):
