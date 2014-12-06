@@ -4,8 +4,7 @@ import types as Types
 import re as RE
 import textwrap
 
-# Utilities {{{1
-# Strip Enclosing Braces {{{2
+# Strip Enclosing Braces {{{1
 def _stripEnclosingBraces(text, stripBraces):
     if not stripBraces or len(text) <= 2:
         return text
@@ -15,8 +14,9 @@ def _stripEnclosingBraces(text, stripBraces):
     else:
         return text[leadingIndex:]
 
-# class Info {{{2
-class Info():
+# class Info {{{1
+# Generic class
+class Info(object):
     def __init__(self, **kwargs):
         self.__dict__ = kwargs
 
