@@ -310,19 +310,22 @@ class ExecuteError(Exception):
         self.showCmd = showCmd
 
     def __str__(self):
-        filename = (
-            self.filename
-            if self.filename
-            else (
-                self.cmd if self.showCmd else self.cmd.split()[0]
+        if self.showCmd:
+            cmd = (
+                self.filename
+                if self.filename
+                else (
+                    self.cmd if self.showCmd == 'full' else self.cmd.split()[0]
+                )
             )
-        )
-        return "%s: %s." % (filename, self.error)
+            return "%s: %s" % (cmd, self.error)
+        else:
+            return "%s" % self.error
 
 class Execute():
     def __init__(
         self, cmd, accept=(0,), stdin=None, stdout=True, stderr=True, wait=True, 
-        shell=False
+        shell=False, showCmd=False
     ):
         """
         Execute a command and capture its output
@@ -350,6 +353,7 @@ class Execute():
         self.save_stdout = stdout
         self.save_stderr = stderr
         self.wait_for_termination = wait
+        self.showCmd = showCmd
         self._run(stdin, shell)
 
     def _run(self, stdin, shell):
@@ -389,18 +393,19 @@ class Execute():
         self.process.stderr.close()
         if self.accept is not True and self.status not in self.accept:
             if self.stderr:
-                raise ExecuteError(self.cmd, self.stderr, showCmd=True)
+                raise ExecuteError(self.cmd, self.stderr, showCmd=self.showCmd)
             else:
                 raise ExecuteError(
                     self.cmd,
-                    "unexpected exit status (%d)" % self.status, showCmd=True)
+                    "unexpected exit status (%d)." % self.status,
+                    showCmd=self.showCmd)
         return self.status
 
 
 class ShellExecute(Execute):
     def __init__(
         self, cmd, accept=(0,), stdin=None, stdout=True, stderr=True, wait=True, 
-        shell=True
+        shell=True, showCmd=False
     ):
         """
         Execute a command in a shell and capture its output
@@ -413,6 +418,7 @@ class ShellExecute(Execute):
         self.save_stdout = stdout
         self.save_stderr = stderr
         self.wait_for_termination = wait
+        self.showCmd = showCmd
         self._run(stdin, True)
 
 
@@ -439,7 +445,9 @@ def execute(cmd, accept=(0,), stdin=None, shell=False):
     if accept is not True and status not in accept:
         raise ExecuteError(
             cmd,
-            "unexpected exit status (%d)" % status, showCmd=True)
+            "unexpected exit status (%d)." % status,
+            showCmd='brief'
+        )
     return status
 
 def shellExecute(cmd, accept=(0,), stdin=None, shell=True):
