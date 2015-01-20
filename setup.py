@@ -1,20 +1,20 @@
 from setuptools import setup
 import manpage
+from config import version
 manpage.write()  # generate the nroff version of the manpage
 
-longDescription='''
-Simple music player.
-'''
+with open('README.rst') as f:
+    longDescription=f.read()
 
 setup(
     name='mp'
-  , version='1.0'
-  , description='music player'
+  , version=version
+  , description='simple music player'
   , long_description=longDescription
   , author="Ken Kundert"
   , author_email='mp@nurdletech.com'
   , scripts=['mp']
-  , py_modules=['mp', 'config', 'cmdline', 'fileutils', 'kskutils']
+  , py_modules=['config', 'scripts']
   , data_files=[
         ('man/man1', ['mp.1'])
     ]

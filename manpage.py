@@ -78,6 +78,25 @@ PROGRAM_MANPAGE = {
 
         The artist and title of the currently playing song is available from 
         ~/.nowplaying.
+
+        If you would like to be able to control the music player from the 
+        keyboard without direct access to the program, consider binding keys to 
+        the following commands:
+        
+        ======== ============= ========================
+        Action   Suggested Key Command
+        ======== ============= ========================
+        pause    XF86AudioStop killall -STOP mp
+        continue XF86AudioPlay killall -CONT mp
+        start                  cd ~/media/music && mp &
+        stop                   killall -INT mp
+        ======== ============= ========================
+
+        This assumes that you have your music stored in ~/media/music and that 
+        you cd to that directory initially and run mp with your choice of music 
+        files and settings. Once you have done that you control mp remotely 
+        with the above commands.
+
     }"""
 }
 

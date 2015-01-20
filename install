@@ -1,6 +1,35 @@
-#!/bin/sh
+#!/bin/bash
+# Installs mp
+#
+# Requires Python 2.7. See README.rst for dependencies.
+# Be sure to add ~/.local/bin into your path.
+cmd=mp
+python=python
 
-# remove build directory from a previous install to assure a clean install
-rm -rf build
+# Determine the version of python we are using
+vers=$($python -c 'import sys; print("%s.%s" % (sys.version_info[0], sys.version_info[1]))')
+echo "Installing $cmd to ~/.home/bin (Python$vers)."
 
-python setup.py install --prefix=~/.local
+# remove build directories from a previous install to assure a clean install
+rm -rf build dist $cmd.egg-info install.out
+
+# install $cmd
+python$vers setup.py install --quiet --user >& install.out
+if [[ $? -ne 0 ]] ; then
+    echo "Problems found, aborting (see install.out)"
+    exit 1
+fi
+
+# setuptools no longer installs man pages properly, so I must fix things up
+for sect in 1
+do
+    mkdir -p ~/.local/man/man$sect
+    unlink ~/.local/man/man$sect/$cmd.$sect
+    ln -s ~/.local/lib/python$vers/site-packages/$cmd-*.egg/man/man$sect/$cmd.$sect ~/.local/man/man$sect
+    # if you get a 'failed to create symbolic link: file exists' message when 
+    # running install, it is because there are previous versions of mp 
+    # installed in ~/.local.  Delete them and the message should go away.
+done
+
+# remove build directories, because I like a clean directory
+rm -rf build dist $cmd.egg-info
