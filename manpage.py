@@ -89,7 +89,7 @@ PROGRAM_MANPAGE = {
         pause    XF86AudioStop killall -STOP mp
         continue XF86AudioPlay killall -CONT mp
         start                  cd ~/media/music && mp &
-        stop                   killall -INT mp
+        stop                   killall mp
         ======== ============= ========================
 
         This assumes that you have your music stored in ~/media/music and that 
