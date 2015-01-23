@@ -1,0 +1,4 @@
+#!/bin/sh
+
+python2 ../mp audio/test.m3u
+python2 ../mp

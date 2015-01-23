@@ -44,10 +44,14 @@ Options:
 # along with this program.  If not, see [http://www.gnu.org/licenses/].
 
 # Imports {{{1
-from __future__ import division, print_function
-from config import (
-    mediaFileExtensions, restartFilename, separator,
-    skipSongThatWasPlayingWhenLastKilled
+from __future__ import print_function, unicode_literals, absolute_import
+from music_player import (
+    MetaData,
+    Player,
+    mediaFileExtensions,
+    restartFilename,
+    separator,
+    nowPlayingFilename,
 )
 import docopt
 from scripts import (
@@ -55,10 +59,15 @@ from scripts import (
     normpath, rm, script_prefs, stem,
 )
 from time import sleep
+import threading
+from gi.repository import GObject, Gst
+GObject.threads_init()
+Gst.init(None)
 import sys
 
 # Globals {{{1
-now_playing_file = join('~/.nowplaying', expanduser=True)
+assert 'm3u' not in mediaFileExtensions
+now_playing_file = join(nowPlayingFilename, expanduser=True)
     # if now_playing_file is set, the artist and song title will be placed in 
     # that file while that song is playing.
 skip = []
@@ -69,15 +78,15 @@ script_prefs.set('exit_upon_error', False)
     # and the program simply hangs if exit is called unexpectedly and there is
     # no indication of what when wrong. With it set to False at least a stack
     # trace is printed so you can figure out what when wrong.
+cmdLine = sys.argv
 
-# Process command line {{{1
+# Read restart file {{{1
 # Command line processing must be performed before importing gstreamer otherwise
 # it tries to handle the command line options.
-cmdLine = sys.argv
 if len(cmdLine) == 1:
     # Command line is empty, try to restart
     try:
-        with open(restartFilename) as restartFile:
+        with fopen(restartFilename) as restartFile:
             lines = restartFile.readlines()
         lines = [line.strip() for line in lines]
         for i, line in enumerate(lines):
@@ -95,234 +104,30 @@ if len(cmdLine) == 1:
     except IOError:
         sys.exit('Previous session information not found.')
 
-# Actually read the command line and save options
+# Process command line {{{1
+try:
+    unicode
+    cmdLine = [str(arg) for arg in cmdLine]
+except NameError:
+    pass
+    # This code should not be necessary, but is because docopt does not
+    # support unicode yet, but it does support python3 where all strings are
+    # unicode. This code converts command line args from unicode to simple
+    # strings, but in python3 where it is not necessary unicode is not
+    # defined, and that triggers the NameError. So in python2 the arguments
+    # are converted to strings, in python3 they are left as unicode.
+    # Reports are that docopt is being fixed, so this should go away soon
+    # (current version is 0.6.1.1).
 args = docopt.docopt(__doc__ % ', '.join(mediaFileExtensions), cmdLine)
 quiet = args['--quiet']
 repeat = args['--repeat']
 shuffle = args['--shuffle']
 playlist = args['--playlist']
-
-# MetaData class {{{1
-# I have a very weak understanding of the way metadata is implemented and why
-# this is so hard.
-class MetaData:
-    def __init__(self, filename):
-        self.filename = filename
-        self.artist = None
-        self.album = None
-        self.title = None
-        self.track = None
-        self.volume = None
-
-        # Try EasyID3 metadata
-        try:
-            from mutagen.easyid3 import EasyID3
-            from mutagen.id3 import ID3NoHeaderError
-            try:
-                metadata = EasyID3(filename)
-                self._getEasyMetadata(metadata)
-                return
-            except ID3NoHeaderError:
-                pass
-        except ImportError:
-            pass
-
-        # If that did not work, try ID3 metadata
-        try:
-            from mutagen.id3 import ID3, ID3NoHeaderError
-            try:
-                metadata = ID3(filename)
-                self._getID3Metadata(metadata)
-                return
-            except ID3NoHeaderError:
-                pass
-        except ImportError:
-            pass
-
-        # If those did not work, filetype specific metadata
-        ext = extension(filename).lower()
-        if ext == '.ogg':
-            try:
-                from mutagen.oggvorbis import OggVorbis, OggVorbisHeaderError
-                try:
-                    metadata = OggVorbis(filename)
-                    self._getEasyMetadata(metadata)
-                    return
-                except OggVorbisHeaderError:
-                    pass
-            except ImportError:
-                pass
-        elif ext == '.mp3':
-            try:
-                from mutagen.mp3 import MP3, HeaderNotFoundError
-                try:
-                    metadata = MP3(filename)
-                    self._getID3Metadata(metadata)
-                    return
-                except HeaderNotFoundError:
-                    pass
-            except ImportError:
-                pass
-        elif ext == '.flac':
-            try:
-                from mutagen.flac import FLAC, FLACNoHeaderError
-                try:
-                    metadata = FLAC(filename)
-                    self._getEasyMetadata(metadata)
-                    return
-                except FLACNoHeaderError:
-                    pass
-            except ImportError:
-                pass
-        # if we get here we failed to get the metadata
-
-    def summary(self):
-        if self.album:
-            if self.volume and self.track:
-                album = " (track %s.%s from '%s')" % (self.volume, self.track, self.album)
-            elif self.track:
-                album = " (track %s from '%s')" % (self.track.lstrip('0'), self.album)
-            else:
-                album = " (from '%s')" % (self.album)
-        else:
-            album = ''
-        if self.artist and self.title:
-            return "%s '%s'%s" % (self.artist, self.title, album)
-        elif self.title:
-            return "'%s'%s" % (self.title, album)
-        else:
-            return self.filename
-
-    def now_playing(self):
-        if now_playing_file:
-            out = [each for each in [self.artist, self.title] if each]
-            with fopen(now_playing_file, 'w') as f:
-                f.write(' - '.join(out))
-
-    def _getEasyMetadata(self, metadata):
-        self.artist = metadata.get('artist', [None])[0]
-        self.album = metadata.get('album', [None])[0]
-        self.title = metadata.get('title', [None])[0]
-        self.track = metadata.get('tracknumber', [None])[0]
-        self.volume = metadata.get('discnumber', [None])[0]
-
-    def _getID3Metadata(self, metadata):
-        try:
-            self.artist = metadata['TPE1'].text[0]
-        except KeyError:
-            pass
-        try:
-            self.album = metadata['TALB'].text[0]
-        except KeyError:
-            pass
-        try:
-            self.title = metadata['TIT2'].text[0]
-        except KeyError:
-            pass
-        try:
-            self.track = metadata['TRCK'].text[0]
-        except KeyError:
-            pass
-        try:
-            self.volume = metadata['TPOS'].text[0]
-        except KeyError:
-            pass
-
-# Player class {{{1
-# import gstreamer
-import pygst
-pygst.require("0.10")
-import gst
-    # With gnome3 this import generates a deprecated function warning
-    # This warning can be ignored.
-
-class Player:
-    def __init__(self, quiet=False):
-        player = gst.element_factory_make("playbin2", "player")
-        fakesink = gst.element_factory_make("fakesink", "fakesink")
-        player.set_property("video-sink", fakesink)
-        bus = player.get_bus()
-        bus.add_signal_watch()
-        bus.connect("message", self.processMessage)
-        self.player = player
-        self.quiet = quiet
-        self.songs = []
-        self.skip = []
-        self.played = []
-        self.playing = False
-
-    def processMessage(self, bus, message):
-        if message.type == gst.MESSAGE_EOS:
-            self.player.set_state(gst.STATE_NULL)
-            self.playing = False
-        elif message.type == gst.MESSAGE_ERROR:
-            self.player.set_state(gst.STATE_NULL)
-            err, debug = message.parse_error()
-            print("Error: %s" % err, debug)
-            self.playing = False
-
-    def addSongs(self, paths, cwd='.'):
-        for path in paths:
-            path = normpath(join(cwd, path))
-            if isfile(path):
-                ext = extension(path).lower()
-                if ext in mediaFileExtensions:
-                    self.songs += [path]
-                elif ext == '.m3u':
-                    with fopen(path) as playlist:
-                        self.addSongs(
-                            playlist.read().strip().split('\n'),
-                            head(path)
-                        )
-                elif exists(path):
-                    if not self.quiet:
-                        print("%s: skipping descriptor of unknown type." % path)
-                else:
-                    if not self.quiet:
-                        print("%s: no such file or directory." % path)
-            elif isdir(path):
-                self.addSongs(sorted(ls(path=path)))
-
-    def writePlaylist(self, filename):
-        with fopen(filename, 'w') as playlist:
-            playlist.write('\n'.join(self.songs))
-
-    def addSkips(self, paths):
-        self.skip = paths
-
-    def shuffleSongs(self):
-        from random import shuffle
-        shuffle(self.songs)
-
-    def play(self):
-        for song in self.songs:
-            if song in self.skip:
-                continue
-            if skipSongThatWasPlayingWhenLastKilled:
-                self.played.append(sont)
-            self.playing = True
-            if not self.quiet:
-                metadata = MetaData(song)
-                print(metadata.summary())
-                metadata.now_playing()
-            self.player.set_property("uri", "file://" + abspath(song))
-            self.player.set_state(gst.STATE_PLAYING)
-            while self.playing:
-                sleep(1)
-            if not skipSongThatWasPlayingWhenLastKilled:
-                self.played.append(song)
-        self.skip = []
-        self.played = []
-        sleep(1)
-        loop.quit()
-
-    def songsAlreadyPlayed(self):
-        return self.skip + self.played
+songs = args['<songs>'][1:]
 
 # Construct and initialize player {{{1
-import thread, gobject, glib
-player = Player(quiet)
-player.addSongs(args['<songs>'][1:])
+player = Player(quiet, now_playing_file)
+player.addSongs(songs)
 if playlist:
     if not extension(playlist):
         playlist = addext(playlist, '.m3u')
@@ -345,9 +150,10 @@ try:
     while first or repeat:
         if shuffle:
             player.shuffleSongs()
-        thread.start_new_thread(player.play, ())
-        gobject.threads_init()
-        loop = glib.MainLoop()
+        loop = GObject.MainLoop()
+        thread = threading.Thread(target=player.play, args=(loop.quit,))
+        thread.setDaemon(True)
+        thread.start()
         loop.run()
         first = False
         if repeat and not quiet:
@@ -357,6 +163,7 @@ except KeyboardInterrupt:
         print("mp: killed at user request.")
     songsAlreadyPlayed = player.songsAlreadyPlayed()
 
+# Termination {{{1
 if now_playing_file:
     rm(now_playing_file)
 

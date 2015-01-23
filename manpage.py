@@ -20,7 +20,7 @@
 
 # Imports {{{1
 from kskutils import conjoin
-from config import mediaFileExtensions, version, date
+from music_player import mediaFileExtensions, version, date
 from textwrap import dedent
 from docutils.core import publish_string
 from docutils.writers import manpage

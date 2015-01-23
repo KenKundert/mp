@@ -1,6 +1,6 @@
 from setuptools import setup
 import manpage
-from config import version
+from music_player import version
 manpage.write()  # generate the nroff version of the manpage
 
 with open('README.rst') as f:
@@ -14,7 +14,7 @@ setup(
   , author="Ken Kundert"
   , author_email='mp@nurdletech.com'
   , scripts=['mp']
-  , py_modules=['config', 'scripts']
+  , packages=['music_player', 'scripts']
   , data_files=[
         ('man/man1', ['mp.1'])
     ]
