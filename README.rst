@@ -19,7 +19,7 @@ RPM Fusion non-free repository::
 
 With recent versions of Fedora I now seem to have to install more plugins to get 
 MP3s to work. I am not sure of what a minimum set would be, but this seemed to 
-fix the issue:
+fix the issue::
 
    yum install gstreamer-plugins-bad gstreamer-plugins-bad-free \
                gstreamer-plugins-bad-free-extras gstreamer-plugins-bad-nonfree \
