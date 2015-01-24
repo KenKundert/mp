@@ -56,7 +56,7 @@ from music_player import (
 import docopt
 from scripts import (
     abspath, addext, exists, extension, fopen, head, isdir, isfile, join, ls,
-    normpath, rm, script_prefs, stem,
+    normpath, rm, script_prefs, stem, ScriptError
 )
 from time import sleep
 import threading
@@ -95,13 +95,13 @@ if len(cmdLine) == 1:
                 break
         else:
             # this file is not what we were expecting, ignore it
-            raise IOError
+            raise ScriptError
 
         # augment command line with the saved version
         cmdLine += lines[:partition]
         # skip the songs that were already played
         skip = lines[partition+1:]
-    except IOError:
+    except ScriptError:
         sys.exit('Previous session information not found.')
 
 # Process command line {{{1
