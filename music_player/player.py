@@ -52,8 +52,9 @@ class Player(object):
                     self.songs += [path]
                 elif ext == '.m3u':
                     with fopen(path) as playlist:
+                        lines = [l.strip() for l in playlist.readlines()]
                         self.addSongs(
-                            playlist.read().strip().split('\n'),
+                            [l for l in lines if l and l[0] != '#'],
                             head(path)
                         )
                 elif exists(path):

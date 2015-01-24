@@ -103,6 +103,8 @@ class MetaData(object):
     def now_playing(self):
         if self.now_playing_file:
             out = [each for each in [self.artist, self.title] if each]
+            #if not out:
+            #    out = [self.filename]
             with fopen(self.now_playing_file, 'w') as f:
                 f.write(' - '.join(out))
 

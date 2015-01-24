@@ -57,7 +57,8 @@ PROGRAM_MANPAGE = {
         for music files, which will be added to the list of songs to be
         played.
 
-        Currently only {extensions} music files are supported.
+        Currently only {extensions} music files and simple .m3u play lists are 
+        supported.
 
         Use Ctrl-Z to pause and 'fg' to continue. Use Ctrl-C when running to kill.
 
