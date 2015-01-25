@@ -28,7 +28,7 @@ fix the issue::
                gstreamer1-plugins-bad-free gstreamer1-plugins-bad-free-extras \
                gstreamer1-plugins-bad-freeworld gstreamer1-plugins-base \
                gstreamer1-plugins-base-tools gstreamer1-plugins-good \
-               gstreamer1-plugins-good-extras gstreamer1-plugins-ugly\
+               gstreamer1-plugins-good-extras gstreamer1-plugins-ugly
 
 If you do not want mp3 support, edit music_player/prefs.py and remove 'mp3' from 
 mediaFileExtensions.
