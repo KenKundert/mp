@@ -91,7 +91,7 @@ class Player(object):
             if not self.quiet:
                 metadata = MetaData(song, self.now_playing_file)
                 print(metadata.summary())
-            metadata.now_playing()
+                metadata.now_playing()
             self.player.set_property("uri", "file://" + abspath(song))
             self.player.set_state(Gst.State.PLAYING)
             while self.playing:
