@@ -86,7 +86,7 @@ class Player(object):
             if song in self.skip:
                 continue
             if skipSongThatWasPlayingWhenLastKilled:
-                self.played.append(sont)
+                self.played.append(song)
             self.playing = True
             if not self.quiet:
                 metadata = MetaData(song, self.now_playing_file)
@@ -95,7 +95,7 @@ class Player(object):
             self.player.set_property("uri", "file://" + abspath(song))
             self.player.set_state(Gst.State.PLAYING)
             while self.playing:
-                sleep(1)
+                sleep(0.1)
             if not skipSongThatWasPlayingWhenLastKilled:
                 self.played.append(song)
         self.skip = []
