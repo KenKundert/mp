@@ -67,7 +67,10 @@ import sys
 
 # Globals {{{1
 assert 'm3u' not in mediaFileExtensions
-now_playing_file = join(nowPlayingFilename, expanduser=True)
+if nowPlayingFilename:
+    now_playing_file = join(nowPlayingFilename, expanduser=True)
+else:
+    now_playing_file = None
     # if now_playing_file is set, the artist and song title will be placed in 
     # that file while that song is playing.
 skip = []

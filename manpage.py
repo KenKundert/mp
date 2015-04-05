@@ -99,11 +99,11 @@ PROGRAM_MANPAGE = {
         with the above commands.
 
         A simple way to listen to your favorite music is to cd to you music 
-        directory and run 'mp -p favorites.m3u *', then edit that file and 
+        directory and run ``mp -p favorites.m3u *``, then edit that file and 
         delete any songs you not interested in hearing. Then run 'mp -r -s 
         favorite.m3u'. Or, if that results is a file that is just too big to 
         manage easily, you can do the same in each of the subdirectories, and 
-        then run 'mp -r -s */favorites.m3u' to play your music.
+        then run ``mp -r -s */favorites.m3u`` to play your music.
 
     }"""
 }
