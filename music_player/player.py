@@ -10,7 +10,10 @@ from .prefs import mediaFileExtensions, skipSongThatWasPlayingWhenLastKilled
 from .metadata import MetaData
 from time import sleep
 import sys
-import _thread
+try:
+    import thread
+except ImportError:
+    import _thread
 from gi.repository import GObject, Gst
 Gst.init(None)
 

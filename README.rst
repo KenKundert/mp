@@ -11,6 +11,10 @@ install the docutils, GI, gstreamer, and mutagen packages for python with::
    yum install python-docutils python-gi gstreamer-python gstreamer-plugins-good
     
    pip install python-mutagen
+   
+or with python3
+
+   pip3 install mutagen
 
 If you want mp3 support, you also need to install the 'ugly' plugins from the 
 RPM Fusion non-free repository::
