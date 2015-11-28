@@ -14,6 +14,8 @@ try:
     import thread
 except ImportError:
     import _thread
+import gi
+gi.require_version('Gst', '1.0')
 from gi.repository import GObject, Gst
 Gst.init(None)
 
@@ -62,7 +64,8 @@ class Player(object):
                         )
                 elif exists(path):
                     if not self.quiet:
-                        print("%s: skipping descriptor of unknown type." % path)
+                        #print("%s: skipping descriptor of unknown type." % path)
+                        pass
                 else:
                     if not self.quiet:
                         print("%s: no such file or directory." % path)

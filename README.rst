@@ -14,25 +14,14 @@ install the docutils, GI, gstreamer, and mutagen packages for python with::
    
 or with python3
 
+   dnf install python3-gobject python3-gstreamer1 gstreamer-plugins-good 
+
    pip3 install mutagen
 
 If you want mp3 support, you also need to install the 'ugly' plugins from the 
 RPM Fusion non-free repository::
 
-   yum install gstreamer-plugins-ugly
-
-With recent versions of Fedora I now seem to have to install more plugins to get 
-MP3s to work. I am not sure of what a minimum set would be, but this seemed to 
-fix the issue::
-
-   yum install gstreamer-plugins-bad gstreamer-plugins-bad-free \
-               gstreamer-plugins-bad-free-extras gstreamer-plugins-bad-nonfree \
-               gstreamer-plugins-base gstreamer-plugins-espeak \
-               gstreamer-plugins-good gstreamer-plugins-ugly \
-               gstreamer1-plugins-bad-free gstreamer1-plugins-bad-free-extras \
-               gstreamer1-plugins-bad-freeworld gstreamer1-plugins-base \
-               gstreamer1-plugins-base-tools gstreamer1-plugins-good \
-               gstreamer1-plugins-good-extras gstreamer1-plugins-ugly
+   yum install gstreamer1-plugins-ugly
 
 If you do not want mp3 support, edit music_player/prefs.py and remove 'mp3' from 
 mediaFileExtensions.
