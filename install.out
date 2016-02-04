@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "setup.py", line 2, in <module>
+    import manpage
+  File "/home/ken/src/shared/mp/manpage.py", line 23, in <module>
+    from music_player import mediaFileExtensions, version, date
+  File "/home/ken/src/shared/mp/music_player/__init__.py", line 2, in <module>
+    from .player import Player
+  File "/home/ken/src/shared/mp/music_player/player.py", line 18, in <module>
+    gi.require_version('Gst', '1.0')
+AttributeError: module 'gi' has no attribute 'require_version'

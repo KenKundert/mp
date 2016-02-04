@@ -24,7 +24,7 @@ fi
 for sect in 1
 do
     mkdir -p ~/.local/man/man$sect
-    unlink ~/.local/man/man$sect/$cmd.$sect
+    rm -f ~/.local/man/man$sect/$cmd.$sect
     ln -s ~/.local/lib/python$vers/site-packages/$cmd-*.egg/man/man$sect/$cmd.$sect ~/.local/man/man$sect
     # if you get a 'failed to create symbolic link: file exists' message when 
     # running install, it is because there are previous versions of mp 

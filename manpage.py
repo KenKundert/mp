@@ -19,7 +19,7 @@
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
 # Imports {{{1
-from kskutils import conjoin
+from inform import conjoin
 from music_player import mediaFileExtensions, version, date
 from textwrap import dedent
 from docutils.core import publish_string
