@@ -4,7 +4,7 @@
 # Requires Python 2.7 or Python 3.3. See README.rst for dependencies.
 # Be sure to add ~/.local/bin into your path.
 cmd=mp
-python=python3
+python=python
 
 # Determine the version of python we are using
 vers=$($python -c 'import sys; print("%s.%s" % (sys.version_info[0], sys.version_info[1]))')

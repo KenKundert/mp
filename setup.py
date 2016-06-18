@@ -6,11 +6,11 @@ message = ''
 try:
     import manpage
     manpage.write()  # generate the nroff version of the manpage
-except ImportError:                                                            
+except ImportError:
     # this will let the setup script run, allowing prerequisites to be 
     # installed, but then setup script must be run again so manpage is 
     # generated.
-    with open('fvi.1', 'w') as f:                                              
+    with open('mp.1', 'w') as f:
         f.write('')
     message='\nRerun setup in order to generate the manpage.'
 
@@ -34,17 +34,13 @@ setup(
   , license='GPLv3+'
   , install_requires=[
         'mutagen',
-    #    'gi',
+        'gi',
     ],
-    # there seems to be a problem with the python3 version of gi. If you allow 
-    # python to install gi itself, it seems to get the python2 version. You 
-    # need to use 'yum install python3-gi', and so you need to be using the 
-    # system installed version of python3.
-    # So to install this package into the system version of python3:
-    # 1. comment out 'gi' in install_requires above
-    # 2. manually install scripts package using /usr/bin/python3
-    # 3. modify install so it installs mp using /usr/bin/python3
-    # 4. run ./install
+    # there seems to be a problem with the python3 version of gi. If you allow
+    # python to install gi itself, it seems to pick up the python2 version. So
+    # instead, you should remove it from the list above and use the system's
+    # package manager to install gi. For example, on Fedora23 use:
+    #     dnf install python3-gobject
 )
 
 print(message)
