@@ -5,5 +5,5 @@ restartFilename = '.mp-restart'
 nowPlayingFilename = '~/.nowplaying'
 separator = '### skip the following songs ###'
 version = "1.3"
-date = "2015-01-21"
+date = "2016-06-17"
 skipSongThatWasPlayingWhenLastKilled = False

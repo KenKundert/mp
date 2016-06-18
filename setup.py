@@ -1,7 +1,7 @@
 from setuptools import setup
 from music_player import version
 
-# Create/update manpage before installing                                      
+# Create/update manpage before installing
 message = ''
 try:
     import manpage
