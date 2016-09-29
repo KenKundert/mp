@@ -6,4 +6,4 @@ nowPlayingFilename = '~/.nowplaying'
 separator = '### skip the following songs ###'
 version = "1.3.1"
 date = "2016-06-17"
-skipSongThatWasPlayingWhenLastKilled = False
+skipSongThatWasPlayingWhenLastKilled = True

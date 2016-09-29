@@ -94,10 +94,10 @@ class Player(object):
             if skipSongThatWasPlayingWhenLastKilled:
                 self.played.append(song)
             self.playing = True
+            metadata = MetaData(song, self.now_playing_file)
+            metadata.now_playing()
             if not self.quiet:
-                metadata = MetaData(song, self.now_playing_file)
                 print(metadata.summary())
-                metadata.now_playing()
             self.player.set_property("uri", "file://" + abspath(song))
             self.player.set_state(Gst.State.PLAYING)
             while self.playing:
