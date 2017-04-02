@@ -9,9 +9,9 @@ Tested with Python versions 2.7 and 3.3 under Fedora Linux. You will need
 install the docutils, GI, gstreamer, and mutagen packages for python with::
 
    yum install python-docutils python-gi gstreamer-python gstreamer-plugins-good
-    
+
    pip install python-mutagen
-   
+
 or with python3
 
    dnf install python3-gobject python3-gstreamer1 gstreamer-plugins-good 
