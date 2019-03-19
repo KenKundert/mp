@@ -1,5 +1,4 @@
 from setuptools import setup
-from music_player import version
 
 # Create/update manpage before installing
 message = ''
@@ -15,32 +14,30 @@ except ImportError:
     message='\nRerun setup in order to generate the manpage.'
 
 with open('README.rst') as f:
-    longDescription=f.read()
+    longDescription = f.read()
 
 setup(
-    name='mp'
-  , version=version
-  , description='simple music player'
-  , long_description=longDescription
-  , author="Ken Kundert"
-  , author_email='mp@nurdletech.com'
-  , scripts=['mp']
-  , packages=['music_player', 'scripts']
-  , data_files=[
+    name = 'mp',
+    version = '1.3.1',
+    description = 'simple music player',
+    long_description = longDescription,
+    author = "Ken Kundert",
+    author_email = 'mp@nurdletech.com',
+    scripts = ['mp'],
+    zip_safe = False,
+    packages = ['music_player'],
+    data_files = [
         ('man/man1', ['mp.1'])
-    ]
-  , platforms=['rhel']
-  , use_2to3=True
-  , license='GPLv3+'
-  , install_requires=[
-        'mutagen',
-        'gi',
     ],
-    # there seems to be a problem with the python3 version of gi. If you allow
-    # python to install gi itself, it seems to pick up the python2 version. So
-    # instead, you should remove it from the list above and use the system's
-    # package manager to install gi. For example, on Fedora23 use:
-    #     dnf install python3-gobject
+    platforms = ['rhel'],
+    license = 'GPLv3+',
+    install_requires = [
+        'docopt',
+        'inform',
+        'mutagen',
+        'pygobject',
+    ],
+    python_requires = '>=3.6',
 )
 
 print(message)

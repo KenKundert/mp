@@ -1,15 +1,14 @@
 # Player
 
 # Imports {{{1
-from __future__ import print_function, unicode_literals, absolute_import
-from scripts import (
-    abspath, exists, extension, fopen, head, isdir, isfile, join, ls,
-    normpath
+from .prefs import (
+    media_file_extensions, restart_path,
+    skip_song_that_was_playing_when_last_killed
 )
-from .prefs import mediaFileExtensions, skipSongThatWasPlayingWhenLastKilled
 from .metadata import MetaData
+from inform import display, error, join, warn
+from pathlib import Path
 from time import sleep
-import sys
 try:
     import thread
 except ImportError:
@@ -18,97 +17,103 @@ import gi
 gi.require_version('Gst', '1.0')
 from gi.repository import GObject, Gst
 Gst.init(None)
+import sys
 
 # Player constructor{{{1
 class Player(object):
-    def __init__(self, quiet=False, now_playing_file = None):
+    def __init__(self, now_playing_path = None, informer=None):
         player = Gst.ElementFactory.make("playbin", "player")
         fakesink = Gst.ElementFactory.make("fakesink", "fakesink")
         player.set_property("video-sink", fakesink)
         bus = player.get_bus()
         bus.add_signal_watch()
-        bus.connect("message", self.processMessage)
+        bus.connect("message", self._process_message)
         self.player = player
-        self.quiet = quiet
-        self.now_playing_file = now_playing_file
+        self.informer = informer
+        self.now_playing_path = now_playing_path
         self.songs = []
         self.skip = []
         self.played = []
         self.playing = False
 
-    # processMessage() {{{1
-    def processMessage(self, bus, message):
+    # _process_message() (private) {{{1
+    def _process_message(self, bus, message):
         if message.type == Gst.MessageType.EOS:
             self.player.set_state(Gst.State.NULL)
             self.playing = False
         elif message.type == Gst.MessageType.ERROR:
             self.player.set_state(Gst.State.NULL)
             err, debug = message.parse_error()
-            print("Error: %s" % err, debug)
+            error("Error: %s" % err, debug)
             self.playing = False
 
-    # addSongs() {{{1
-    def addSongs(self, paths, cwd='.'):
+    # add_songs() {{{1
+    def add_songs(self, paths, cwd='.'):
         for path in paths:
-            path = normpath(join(cwd, path))
-            if isfile(path):
-                ext = extension(path).lower()
-                if ext in mediaFileExtensions:
+            path = Path(cwd, path).expanduser()
+            if path.is_file():
+                ext = path.suffix.lower()
+                if ext in media_file_extensions:
                     self.songs += [path]
                 elif ext == '.m3u':
-                    with fopen(path) as playlist:
-                        lines = [l.strip() for l in playlist.readlines()]
-                        self.addSongs(
+                    try:
+                        playlist = path.read_text()
+                        lines = [l.strip() for l in playlist.splitlines()]
+                        self.add_songs(
                             [l for l in lines if l and l[0] != '#'],
-                            head(path)
+                            path.parent
                         )
-                elif exists(path):
-                    if not self.quiet:
-                        #print("%s: skipping descriptor of unknown type." % path)
-                        pass
-                else:
-                    if not self.quiet:
-                        print("%s: no such file or directory." % path)
-            elif isdir(path):
-                self.addSongs(sorted(ls(path=path)))
+                    except OSError as e:
+                        error(os_error(e))
+                elif path.stem != restart_path.stem:
+                    ddd(path=path.stem, now_playing=self.now_playing_path.stem)
+                    if not self.informer.quiet:
+                        warn('skipping descriptor of unknown type.', culprit=path)
+            elif path.is_dir():
+                self.add_songs(path.iterdir())
+            else:
+                if not self.informer.quiet:
+                    warn('not found.', culprit=path)
 
-    # writePlaylist() {{{1
-    def writePlaylist(self, filename):
-        with fopen(filename, 'w') as playlist:
-            playlist.write('\n'.join(self.songs))
+    # write_playlist() {{{1
+    def write_playlist(self, path):
+        try:
+            path.write_text(join(*self.songs))
+        except OSError as e:
+            error(os_error(e))
 
-    # addSkips() {{{1
-    def addSkips(self, paths):
+    # add_skips() {{{1
+    def add_skips(self, paths):
         self.skip = paths
 
-    # shuffleSongs() {{{1
-    def shuffleSongs(self):
+    # shuffle_songs() {{{1
+    def shuffle_songs(self):
         from random import shuffle
         shuffle(self.songs)
 
     # play() {{{1
     def play(self, quit):
-        for song in self.songs:
-            if song in self.skip:
+        for song_filename in self.songs:
+            if song_filename in self.skip:
                 continue
-            if skipSongThatWasPlayingWhenLastKilled:
-                self.played.append(song)
+            if skip_song_that_was_playing_when_last_killed:
+                self.played.append(song_filename)
             self.playing = True
-            metadata = MetaData(song, self.now_playing_file)
+            song_path = Path(song_filename).expanduser()
+            metadata = MetaData(song_path, self.now_playing_path)
             metadata.now_playing()
-            if not self.quiet:
-                print(metadata.summary())
-            self.player.set_property("uri", "file://" + abspath(song))
+            display(metadata.summary())
+            self.player.set_property("uri", "file://" + str(song_path.resolve()))
             self.player.set_state(Gst.State.PLAYING)
             while self.playing:
                 sleep(0.1)
-            if not skipSongThatWasPlayingWhenLastKilled:
-                self.played.append(song)
+            if not skip_song_that_was_playing_when_last_killed:
+                self.played.append(song_filename)
         self.skip = []
         self.played = []
         sleep(1)
         quit()
 
-    # songsAlreadyPlayed() {{{1
-    def songsAlreadyPlayed(self):
+    # songs_already_played() {{{1
+    def songs_already_played(self):
         return self.skip + self.played

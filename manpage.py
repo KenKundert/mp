@@ -20,7 +20,7 @@
 
 # Imports {{{1
 from inform import conjoin
-from music_player import mediaFileExtensions, version, date
+from music_player import media_file_extensions, __version__, __released__
 from textwrap import dedent
 from docutils.core import publish_string
 from docutils.writers import manpage
@@ -39,7 +39,7 @@ PROGRAM_MANPAGE = {
         ------------
 
         :Author: Ken Kundert <mp@nurdletech.com>
-        :Date: {date}
+        :Date: {released}
         :Version: {version}
         :Manual section: 1
 
@@ -112,9 +112,9 @@ PROGRAM_MANPAGE = {
 def write(genRST=False):
     for each in [PROGRAM_MANPAGE]:
         rst = dedent(each['contents'][1:-1]).format(
-            date=date
-          , version=version
-          , extensions=conjoin(mediaFileExtensions, conj=" and ", sep=", ")
+            released = __released__
+          , version = __version__
+          , extensions=conjoin(media_file_extensions, conj=" and ", sep=", ")
         )
 
         # generate reStructuredText file (only used for debugging)
