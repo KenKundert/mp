@@ -6,7 +6,7 @@ from .prefs import (
     skip_song_that_was_playing_when_last_killed
 )
 from .metadata import MetaData
-from inform import display, error, join, warn
+from inform import display, Error, join, warn
 from pathlib import Path
 from time import sleep
 try:
@@ -44,7 +44,7 @@ class Player(object):
         elif message.type == Gst.MessageType.ERROR:
             self.player.set_state(Gst.State.NULL)
             err, debug = message.parse_error()
-            error("Error: %s" % err, debug)
+            raise Error("Error: %s" % err, debug)
             self.playing = False
 
     # add_songs() {{{1
@@ -64,9 +64,8 @@ class Player(object):
                             path.parent
                         )
                     except OSError as e:
-                        error(os_error(e))
+                        raise Error(os_error(e))
                 elif path.stem != restart_path.stem:
-                    ddd(path=path.stem, now_playing=self.now_playing_path.stem)
                     if not self.informer.quiet:
                         warn('skipping descriptor of unknown type.', culprit=path)
             elif path.is_dir():
@@ -74,13 +73,15 @@ class Player(object):
             else:
                 if not self.informer.quiet:
                     warn('not found.', culprit=path)
+        if not self.songs:
+            raise Error('playlist is empty.')
 
     # write_playlist() {{{1
     def write_playlist(self, path):
         try:
             path.write_text(join(*self.songs))
         except OSError as e:
-            error(os_error(e))
+            raise Error(os_error(e))
 
     # add_skips() {{{1
     def add_skips(self, paths):

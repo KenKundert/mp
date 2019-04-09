@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Music Player
 
@@ -15,7 +15,7 @@ Music files with the following extensions are supported:
     %s.
 
 Usage:
-    mp [options] <songs> ...
+    mp [options] [<songs> ...]
 
 Options:
     -q, --quiet      Do not print name of the music file being played.
@@ -28,7 +28,7 @@ Options:
 """
 
 # License {{{1
-# Copyright (C) 2014 Kenneth S. Kundert
+# Copyright (C) 2014-2019 Kenneth S. Kundert
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -44,134 +44,113 @@ Options:
 # along with this program.  If not, see [http://www.gnu.org/licenses/].
 
 # Imports {{{1
-from __future__ import print_function, unicode_literals, absolute_import
 from music_player import (
-    MetaData,
-    Player,
-    mediaFileExtensions,
-    restartFilename,
-    separator,
-    nowPlayingFilename,
+    MetaData, Player, media_file_extensions, restart_path, separator,
+    now_playing_path,
 )
 import docopt
-from scripts import (
-    abspath, addext, exists, extension, fopen, head, isdir, isfile, join, ls,
-    normpath, rm, script_prefs, stem, ScriptError
+from inform import (
+    Error, Inform, display, done, error, fatal, join, os_error, output, warn
 )
+from pathlib import Path
+from textwrap import dedent
 from time import sleep
 import threading
-from gi.repository import GObject, Gst
-GObject.threads_init()
+from gi.repository import GLib, Gst
 Gst.init(None)
 import sys
 
 # Globals {{{1
-assert 'm3u' not in mediaFileExtensions
-if nowPlayingFilename:
-    now_playing_file = join(nowPlayingFilename, expanduser=True)
-else:
-    now_playing_file = None
-    # if now_playing_file is set, the artist and song title will be placed in 
-    # that file while that song is playing.
+assert 'm3u' not in media_file_extensions
 skip = []
-restartArgs = []
-script_prefs.set('exit_upon_error', False)
-    # normally this should be set to true because the ScriptError exception is
-    # not caught by this program, but there is something wrong with the threads
-    # and the program simply hangs if exit is called unexpectedly and there is
-    # no indication of what when wrong. With it set to False at least a stack
-    # trace is printed so you can figure out what when wrong.
-cmdLine = sys.argv
+cmd_line = sys.argv
 
-# Read restart file {{{1
-# Command line processing must be performed before importing gstreamer otherwise
-# it tries to handle the command line options.
-if len(cmdLine) == 1:
-    # Command line is empty, try to restart
+# Music Player {{{1
+with Inform(notify_if_no_tty=True) as inform:
+
+    # Read restart file {{{2
+    # Command line processing must be performed before importing gstreamer 
+    # otherwise it tries to handle the command line options.
+    if len(cmd_line) == 1:
+        # Command line is empty, try to restart
+        try:
+            restartFile = restart_path.read_text()
+            lines = [line.strip() for line in restartFile.splitlines()]
+            for i, line in enumerate(lines):
+                if line == separator:
+                    partition = i
+                    break
+            else:
+                # file contents are not as expected
+                raise Error('invalid restart file.', culprit=restart_path)
+
+            # augment command line with the saved version
+            cmd_line += lines[:partition]
+            # skip the songs that were already played
+            skip = lines[partition+1:]
+        except Error as e:
+            e.terminate()
+        except OSError as e:
+            fatal(os_error(e))
+
+    # Process command line {{{2
+    args = docopt.docopt(__doc__ % ', '.join(media_file_extensions), cmd_line)
+    repeat = args['--repeat']
+    shuffle = args['--shuffle']
+    playlist = args['--playlist']
+    songs = args['<songs>'][1:]
+    inform.quiet = args['--quiet']
+
+    # Construct and initialize player {{{2
     try:
-        with fopen(restartFilename) as restartFile:
-            lines = restartFile.readlines()
-        lines = [line.strip() for line in lines]
-        for i, line in enumerate(lines):
-            if line == separator:
-                partition = i
-                break
-        else:
-            # this file is not what we were expecting, ignore it
-            raise ScriptError
+        player = Player(now_playing_path, inform)
+        player.add_songs(songs)
+        if playlist:
+            playlist = Path(playlist).expanduser()
+            if not playlist.suffix:
+                playlist = playlist.with_suffix('.m3u')
+            player.write_playlist(playlist)
+            output(
+                f"Playlist written to '{playlist!s}'.",
+                'To create a tar file that contains the playlist and the',
+                'music files it references, run:',
+                f'    tar zcfT {playlist.stem!s}.tgz {playlist!s} {playlist!s}',
+            )
+            done()
+        player.add_skips(skip)
 
-        # augment command line with the saved version
-        cmdLine += lines[:partition]
-        # skip the songs that were already played
-        skip = lines[partition+1:]
-    except ScriptError:
-        sys.exit('Previous session information not found.')
+        # Run the player {{{2
+        first = True
+        songs_already_played = []
+        while first or repeat:
+            if shuffle:
+                player.shuffle_songs()
+            loop = GLib.MainLoop()
+            thread = threading.Thread(target=player.play, args=(loop.quit,))
+            thread.setDaemon(True)
+            thread.start()
+            loop.run()
+            first = False
+            if repeat:
+                display("Rewinding ...")
+    except (KeyboardInterrupt, BrokenPipeError):
+        display('mp: killed at user request.')
+        songs_already_played = player.songs_already_played()
+    except Error as e:
+        e.terminate()
 
-# Process command line {{{1
-try:
-    unicode
-    cmdLine = [str(arg) for arg in cmdLine]
-except NameError:
-    pass
-    # This code should not be necessary, but is because docopt does not
-    # support unicode yet, but it does support python3 where all strings are
-    # unicode. This code converts command line args from unicode to simple
-    # strings, but in python3 where it is not necessary unicode is not
-    # defined, and that triggers the NameError. So in python2 the arguments
-    # are converted to strings, in python3 they are left as unicode.
-    # Reports are that docopt is being fixed, so this should go away soon
-    # (current version is 0.6.1.1).
-args = docopt.docopt(__doc__ % ', '.join(mediaFileExtensions), cmdLine)
-quiet = args['--quiet']
-repeat = args['--repeat']
-shuffle = args['--shuffle']
-playlist = args['--playlist']
-songs = args['<songs>'][1:]
+    # Termination {{{2
+    if now_playing_path:
+        try:
+            now_playing_path.unlink()
+        except FileNotFoundError:
+            pass
 
-# Construct and initialize player {{{1
-player = Player(quiet, now_playing_file)
-player.addSongs(songs)
-if playlist:
-    if not extension(playlist):
-        playlist = addext(playlist, '.m3u')
-    player.writePlaylist(playlist)
-    print('\n'.join([
-        "Playlist written to '%s'." % playlist,
-        "To create a tar file that contains the playlist and the music files",
-        "it references, run:",
-        "    tar zcfT %s.tgz %s %s" % (
-            stem(playlist), playlist, playlist
-        )
-    ]))
-    sys.exit()
-player.addSkips(skip)
-
-# Run the player {{{1
-first = True
-songsAlreadyPlayed = []
-try:
-    while first or repeat:
-        if shuffle:
-            player.shuffleSongs()
-        loop = GObject.MainLoop()
-        thread = threading.Thread(target=player.play, args=(loop.quit,))
-        thread.setDaemon(True)
-        thread.start()
-        loop.run()
-        first = False
-        if repeat and not quiet:
-            print("Rewinding ...")
-except KeyboardInterrupt:
-    if not quiet:
-        print("mp: killed at user request.")
-    songsAlreadyPlayed = player.songsAlreadyPlayed()
-
-# Termination {{{1
-if now_playing_file:
-    rm(now_playing_file)
-
-# write out restart information
-with fopen(restartFilename, 'w') as restartFile:
-    restartFile.write('\n'.join(cmdLine[1:]) + '\n')
-    restartFile.write(separator + '\n')
-    restartFile.write('\n'.join(songsAlreadyPlayed) + '\n')
+    # write out restart information
+    try:
+        restart_path.write_text('\n'.join(
+            str(l)
+            for l in cmd_line[1:] + [separator] + songs_already_played
+        ) + '\n')
+    except OSError as e:
+        error(os_error(e))
