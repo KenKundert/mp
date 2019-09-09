@@ -25,6 +25,7 @@ Options:
     -p, --playlist <filename.m3u>
                      Generate a playlist from the music specified rather than
                      play the music.
+    --no-restart     Do not write restart file.
 """
 
 # License {{{1
@@ -46,9 +47,9 @@ Options:
 # Imports {{{1
 from music_player import (
     MetaData, Player, media_file_extensions, restart_path, separator,
-    now_playing_path,
+    now_playing_path, __version__, __released__
 )
-import docopt
+from docopt import docopt
 from inform import (
     Error, Inform, display, done, error, fatal, join, os_error, output, warn
 )
@@ -94,10 +95,15 @@ with Inform(notify_if_no_tty=True) as inform:
             fatal(os_error(e))
 
     # Process command line {{{2
-    args = docopt.docopt(__doc__ % ', '.join(media_file_extensions), cmd_line)
+    args = docopt(
+        __doc__ % ', '.join(media_file_extensions),
+        argv = cmd_line,
+        version = f'mp {__version__} ({__released__})',
+    )
     repeat = args['--repeat']
     shuffle = args['--shuffle']
     playlist = args['--playlist']
+    write_restart_file = not args['--no-restart']
     songs = args['<songs>'][1:]
     inform.quiet = args['--quiet']
 
@@ -147,10 +153,11 @@ with Inform(notify_if_no_tty=True) as inform:
             pass
 
     # write out restart information
-    try:
-        restart_path.write_text('\n'.join(
-            str(l)
-            for l in cmd_line[1:] + [separator] + songs_already_played
-        ) + '\n')
-    except OSError as e:
-        error(os_error(e))
+    if write_restart_file:
+        try:
+            restart_path.write_text('\n'.join(
+                str(l)
+                for l in cmd_line[1:] + [separator] + songs_already_played
+            ) + '\n')
+        except OSError as e:
+            error(os_error(e))

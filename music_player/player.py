@@ -54,7 +54,7 @@ class Player(object):
             if path.is_file():
                 ext = path.suffix.lower()
                 if ext in media_file_extensions:
-                    self.songs += [path]
+                    self.songs += [str(path)]
                 elif ext == '.m3u':
                     try:
                         playlist = path.read_text()
@@ -117,4 +117,8 @@ class Player(object):
 
     # songs_already_played() {{{1
     def songs_already_played(self):
-        return self.skip + self.played
+        # iterate though songs already played without repeating.
+        #played = self.skip + self.played
+        #seen = set()
+        #return [n for n in played if not (n in seen or seen.add(n))]
+        return list(dict.fromkeys(self.skip + self.played))
