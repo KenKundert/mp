@@ -2,8 +2,8 @@ mp: A Music Player
 ==================
 
 This is a simple command line music player. It will play individual music files 
-(flac, mp3, ogg, and wav), directories that contain music files, and m3u play 
-lists.
+(flac, mp3, ogg, oga, and wav), directories that contain music files, and m3u 
+play lists.
 
 Requires Python and 3.6 or better. You will need install the docutils, Gobject, 
 gstreamer, and mutagen packages for python with::

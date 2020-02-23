@@ -51,7 +51,8 @@ from music_player import (
 )
 from docopt import docopt
 from inform import (
-    Error, Inform, display, done, error, fatal, join, os_error, output, warn
+    Error, Inform, display, done, error, fatal, join, os_error, output, warn, 
+    narrate
 )
 from pathlib import Path
 from textwrap import dedent
@@ -67,12 +68,13 @@ skip = []
 cmd_line = sys.argv
 
 # Music Player {{{1
-with Inform(notify_if_no_tty=True) as inform:
+with Inform(notify_if_no_tty=True, narrate=True) as inform:
 
     # Read restart file {{{2
-    # Command line processing must be performed before importing gstreamer 
+    # Command line processing must be performed before importing gstreamer
     # otherwise it tries to handle the command line options.
-    if len(cmd_line) == 1:
+    args = cmd_line[1:]
+    if args == [] or args == ['--quiet']:
         # Command line is empty, try to restart
         try:
             restartFile = restart_path.read_text()
@@ -86,7 +88,7 @@ with Inform(notify_if_no_tty=True) as inform:
                 raise Error('invalid restart file.', culprit=restart_path)
 
             # augment command line with the saved version
-            cmd_line += lines[:partition]
+            cmd_line = cmd_line[0:1] + lines[:partition]
             # skip the songs that were already played
             skip = lines[partition+1:]
         except Error as e:

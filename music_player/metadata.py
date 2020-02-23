@@ -47,7 +47,7 @@ class MetaData(object):
 
         # If those did not work, filetype specific metadata
         ext = media_path.suffix.lower()
-        if ext == '.ogg':
+        if ext in ['.ogg', 'oga']:
             try:
                 from mutagen.oggvorbis import OggVorbis, OggVorbisHeaderError
                 try:

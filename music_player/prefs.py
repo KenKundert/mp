@@ -2,7 +2,9 @@
 
 from pathlib import Path
 
-media_file_extensions = ['.flac', '.mp3', '.ogg', '.wav'] # use lower case only
+media_file_extensions = '.flac .mp3 .ogg .oga .wav .m4a'.lower().split()
+for ext in media_file_extensions:
+    assert ext[0] == '.'
 restart_path = Path('.mp-restart').expanduser()
 now_playing_path = Path('~/.nowplaying').expanduser()
 separator = '### skip the following songs ###'

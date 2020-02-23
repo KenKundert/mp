@@ -7,6 +7,7 @@ cmd=mp
 python=/usr/bin/python3
     # use the system version of python as it is too hard to install pygobject in 
     # a manually compiled version of python.
+python=python3
 
 # Determine the version of python we are using
 vers=$($python -c 'import sys; print("%s.%s" % (sys.version_info[0], sys.version_info[1]))')
