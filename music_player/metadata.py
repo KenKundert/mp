@@ -105,7 +105,7 @@ class MetaData(object):
         if self.now_playing_path:
             out = [each for each in [self.artist, self.title] if each]
             try:
-                self.now_playing_path.write_text(' - '.join(out))
+                self.now_playing_path.write_text(' — '.join(out))
             except OSError as e:
                 if not self.warned:
                     warn(os_error(e))

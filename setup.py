@@ -25,7 +25,7 @@ setup(
     author_email = 'mp@nurdletech.com',
     scripts = ['mp'],
     zip_safe = False,
-    packages = ['music_player'],
+    packages = ['music_player', 'scripts'],
     data_files = [
         ('man/man1', ['mp.1'])
     ],
