@@ -93,7 +93,7 @@ class Player(object):
         shuffle(self.songs)
 
     # play() {{{1
-    def play(self, quit):
+    def play(self, quit, quiet):
         for song_filename in self.songs:
             if song_filename in self.skip:
                 continue
@@ -103,7 +103,8 @@ class Player(object):
             song_path = Path(song_filename).expanduser()
             metadata = MetaData(song_path, self.now_playing_path)
             metadata.now_playing()
-            display(metadata.summary())
+            if not quiet:
+                print(metadata.summary())
             self.player.set_property("uri", "file://" + str(song_path.resolve()))
             self.player.set_state(Gst.State.PLAYING)
             while self.playing:

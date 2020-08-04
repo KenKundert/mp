@@ -32,6 +32,7 @@ setup(
     platforms = ['rhel'],
     license = 'GPLv3+',
     install_requires = [
+        'appdirs',
         'docopt',
         'inform',
         'mutagen',

@@ -49,10 +49,11 @@ from music_player import (
     MetaData, Player, media_file_extensions, restart_path, separator,
     now_playing_path, __version__, __released__
 )
+from appdirs import user_data_dir
 from docopt import docopt
 from inform import (
-    Error, Inform, display, done, error, fatal, join, os_error, output, warn, 
-    narrate
+    Error, Inform, display, done, error, fatal, join, narrate, os_error, output, 
+    warn,
 )
 from pathlib import Path
 from textwrap import dedent
@@ -66,9 +67,10 @@ import sys
 assert 'm3u' not in media_file_extensions
 skip = []
 cmd_line = sys.argv
+logfile = Path(user_data_dir('mp')) / 'log' 
 
 # Music Player {{{1
-with Inform(notify_if_no_tty=True, narrate=True) as inform:
+with Inform(notify_if_no_tty=True, logfile=logfile, flush=True) as inform:
 
     # Read restart file {{{2
     # Command line processing must be performed before importing gstreamer
@@ -76,6 +78,7 @@ with Inform(notify_if_no_tty=True, narrate=True) as inform:
     args = cmd_line[1:]
     if args == [] or args == ['--quiet']:
         # Command line is empty, try to restart
+        narrate('command line is empty, reading', restart_path, end='.\n')
         try:
             restartFile = restart_path.read_text()
             lines = [line.strip() for line in restartFile.splitlines()]
@@ -111,9 +114,11 @@ with Inform(notify_if_no_tty=True, narrate=True) as inform:
 
     # Construct and initialize player {{{2
     try:
+        narrate('starting player in', Path.cwd())
         player = Player(now_playing_path, inform)
         player.add_songs(songs)
         if playlist:
+            narrate('writing playlist:', playlist)
             playlist = Path(playlist).expanduser()
             if not playlist.suffix:
                 playlist = playlist.with_suffix('.m3u')
@@ -132,15 +137,20 @@ with Inform(notify_if_no_tty=True, narrate=True) as inform:
         songs_already_played = []
         while first or repeat:
             if shuffle:
+                narrate('shuffling')
                 player.shuffle_songs()
+            narrate('playing songs ...')
             loop = GLib.MainLoop()
-            thread = threading.Thread(target=player.play, args=(loop.quit,))
+            thread = threading.Thread(
+                target=player.play,
+                args=(loop.quit, args['--quiet'])
+            )
             thread.setDaemon(True)
             thread.start()
             loop.run()
             first = False
             if repeat:
-                display("Rewinding ...")
+                display("rewinding")
     except (KeyboardInterrupt, BrokenPipeError):
         display('mp: killed at user request.')
         songs_already_played = player.songs_already_played()
@@ -157,9 +167,13 @@ with Inform(notify_if_no_tty=True, narrate=True) as inform:
     # write out restart information
     if write_restart_file:
         try:
+            narrate('writing:', restart_path)
             restart_path.write_text('\n'.join(
                 str(l)
                 for l in cmd_line[1:] + [separator] + songs_already_played
             ) + '\n')
         except OSError as e:
             error(os_error(e))
+
+    # we are done here
+    done()
