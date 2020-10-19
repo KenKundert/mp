@@ -32,7 +32,6 @@ class Player(object):
         self.informer = informer
         self.now_playing_path = now_playing_path
         self.songs = []
-        self.skip = []
         self.played = []
         self.playing = False
 
@@ -85,7 +84,7 @@ class Player(object):
 
     # add_skips() {{{1
     def add_skips(self, paths):
-        self.skip = paths
+        self.played = paths
 
     # shuffle_songs() {{{1
     def shuffle_songs(self):
@@ -95,7 +94,7 @@ class Player(object):
     # play() {{{1
     def play(self, quit, quiet):
         for song_filename in self.songs:
-            if song_filename in self.skip:
+            if song_filename in self.played:
                 continue
             if skip_song_that_was_playing_when_last_killed:
                 self.played.append(song_filename)
@@ -111,7 +110,6 @@ class Player(object):
                 sleep(0.1)
             if not skip_song_that_was_playing_when_last_killed:
                 self.played.append(song_filename)
-        self.skip = []
         self.played = []
         sleep(1)
         quit()
@@ -119,7 +117,7 @@ class Player(object):
     # songs_already_played() {{{1
     def songs_already_played(self):
         # iterate though songs already played without repeating.
-        #played = self.skip + self.played
+        #played = self.played
         #seen = set()
         #return [n for n in played if not (n in seen or seen.add(n))]
-        return list(dict.fromkeys(self.skip + self.played))
+        return list(dict.fromkeys(self.played))

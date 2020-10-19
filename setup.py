@@ -25,7 +25,7 @@ setup(
     author_email = 'mp@nurdletech.com',
     scripts = ['mp'],
     zip_safe = False,
-    packages = ['music_player', 'scripts'],
+    packages = ['music_player'],
     data_files = [
         ('man/man1', ['mp.1'])
     ],
@@ -34,7 +34,7 @@ setup(
     install_requires = [
         'appdirs',
         'docopt',
-        'inform',
+        'inform>=1.22',
         'mutagen',
         'pygobject',
     ],

@@ -3,7 +3,14 @@
 # Used to access the music file metadata (title, artist, etc.).
 
 # Imports {{{1
-from inform import os_error, warn
+from inform import Color, join, os_error, warn
+from .prefs import (
+    show_album, show_track, title_color, artist_color, album_color, path_color
+)
+title_color = Color(title_color, Color.isTTY())
+artist_color = Color(artist_color, Color.isTTY())
+album_color = Color(album_color, Color.isTTY())
+path_color = Color(path_color, Color.isTTY())
 
 # MetaData constructor {{{1
 # I have a very weak understanding of the way metadata is implemented and why
@@ -85,20 +92,36 @@ class MetaData(object):
     # summary() {{{1
     def summary(self):
         if self.album:
-            if self.volume and self.track:
-                album = " (track %s.%s from '%s')" % (self.volume, self.track, self.album)
-            elif self.track:
-                album = " (track %s from '%s')" % (self.track.lstrip('0'), self.album)
-            else:
-                album = " (from '%s')" % (self.album)
+            album = join(
+                album = self.album if show_album else None,
+                track = self.track.lstrip('0') if self.track and show_track else None,
+                volume = self.volume if show_track else None,
+                template = (
+                    '{album} (vol {volume}, track {track})',
+                    '{album} (track {track})',
+                    '{album}',
+                    '',
+                )
+            )
+            album = album_color(album)
         else:
             album = ''
-        if self.artist and self.title:
-            return "%s '%s'%s" % (self.artist, self.title, album)
-        elif self.title:
-            return "'%s'%s" % (self.title, album)
-        else:
-            return str(self.media_path)
+        artist = artist_color(self.artist)
+        title = title_color(self.title)
+        path = path_color(self.media_path)
+        return join(
+            artist = artist_color(self.artist),
+            title = title_color(self.title),
+            album = album_color(album),
+            path = path_color(self.media_path),
+            template=(
+                '{title}  {artist}  {album}',
+                '{title}  {artist}',
+                '{title}  {album}',
+                '{title}',
+                '{path}',
+            )
+        )
 
     # now_playing() {{{1
     def now_playing(self):
