@@ -30,12 +30,12 @@ class MetaData(object):
         # Try EasyID3 metadata
         try:
             from mutagen.easyid3 import EasyID3
-            from mutagen.id3 import ID3NoHeaderError
+            from mutagen import MutagenError
             try:
                 metadata = EasyID3(media_filename)
                 self._get_easy_metadata(metadata)
                 return
-            except ID3NoHeaderError:
+            except MutagenError:
                 pass
         except ImportError:
             pass

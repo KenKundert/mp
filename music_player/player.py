@@ -6,7 +6,7 @@ from .prefs import (
     skip_song_that_was_playing_when_last_killed
 )
 from .metadata import MetaData
-from inform import display, Error, join, warn
+from inform import display, Error, join, os_error, warn
 from pathlib import Path
 from time import sleep
 try:
