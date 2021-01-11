@@ -6,7 +6,7 @@ from .prefs import (
     skip_song_that_was_playing_when_last_killed
 )
 from .metadata import MetaData
-from inform import display, Error, join, os_error, warn
+from inform import Error, display, join, os_error, warn
 from pathlib import Path
 from time import sleep
 try:
@@ -103,7 +103,7 @@ class Player(object):
             metadata = MetaData(song_path, self.now_playing_path)
             metadata.now_playing()
             if not quiet:
-                print(metadata.summary())
+                display(metadata.summary())
             self.player.set_property("uri", "file://" + str(song_path.resolve()))
             self.player.set_state(Gst.State.PLAYING)
             while self.playing:

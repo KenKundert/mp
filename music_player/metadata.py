@@ -103,18 +103,14 @@ class MetaData(object):
                     '',
                 )
             )
-            album = album_color(album)
         else:
-            album = ''
-        artist = artist_color(self.artist)
-        title = title_color(self.title)
-        path = path_color(self.media_path)
+            album = None
         return join(
-            artist = artist_color(self.artist),
-            title = title_color(self.title),
-            album = album_color(album),
-            path = path_color(self.media_path),
-            template=(
+            artist = artist_color(self.artist) if self.artist else None,
+            title = title_color(self.title) if self.title else None,
+            path = path_color(self.media_path) if self.media_path else None,
+            album = album_color(album) if album else None,
+            template = (
                 '{title}  {artist}  {album}',
                 '{title}  {artist}',
                 '{title}  {album}',
