@@ -6,7 +6,7 @@ from .prefs import (
     skip_song_that_was_playing_when_last_killed
 )
 from .metadata import MetaData
-from inform import Error, display, join, os_error, warn
+from inform import Error, error, display, join, os_error, warn
 from pathlib import Path
 from time import sleep
 try:
@@ -43,7 +43,9 @@ class Player(object):
         elif message.type == Gst.MessageType.ERROR:
             self.player.set_state(Gst.State.NULL)
             err, debug = message.parse_error()
-            raise Error("Error: %s" % err, debug)
+            error(err, debug)
+                # cannot raise Error cause we are in a different thread and so
+                # error will not be caught
             self.playing = False
 
     # add_songs() {{{1
