@@ -29,7 +29,7 @@ setup(
     data_files = [
         ('man/man1', ['mp.1'])
     ],
-    platforms = ['rhel'],
+    zip_safe = True,
     license = 'GPLv3+',
     install_requires = [
         'appdirs',
