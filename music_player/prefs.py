@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-media_file_extensions = '.flac .mp3 .ogg .oga .wav .m4a'.lower().split()
+media_file_extensions = '.flac .mp3 .ogg .oga .wav .m4a .m4b'.lower().split()
 for ext in media_file_extensions:
     assert ext[0] == '.'
 restart_path = Path('.mp-restart').expanduser()

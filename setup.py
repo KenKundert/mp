@@ -24,12 +24,11 @@ setup(
     author = "Ken Kundert",
     author_email = 'mp@nurdletech.com',
     scripts = ['mp'],
-    zip_safe = False,
     packages = ['music_player'],
     data_files = [
         ('man/man1', ['mp.1'])
     ],
-    zip_safe = True,
+    zip_save = True,
     license = 'GPLv3+',
     install_requires = [
         'appdirs',
