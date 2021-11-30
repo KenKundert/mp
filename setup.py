@@ -18,7 +18,7 @@ with open('README.rst') as f:
 
 setup(
     name = 'mp',
-    version = '1.6.0',
+    version = '1.7.0',
     description = 'simple music player',
     long_description = longDescription,
     author = "Ken Kundert",
