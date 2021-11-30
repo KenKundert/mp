@@ -83,7 +83,7 @@ PROGRAM_MANPAGE = {
         If you would like to be able to control the music player from the 
         keyboard without direct access to the program, consider binding keys to 
         the following commands:
-        
+
         ======== ============= ========================
         Action   Suggested Key Command
         ======== ============= ========================
