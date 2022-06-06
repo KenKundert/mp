@@ -45,6 +45,11 @@ Options:
 # along with this program.  If not, see [http://www.gnu.org/licenses/].
 
 # Imports {{{1
+# the threading package is throwing off a lot of deprecation warnings
+# KSK 220224
+import warnings
+warnings.filterwarnings("ignore")
+
 from music_player import (
     MetaData, Player, media_file_extensions, restart_path, separator,
     now_playing_path, __version__, __released__
@@ -151,7 +156,7 @@ with Inform(notify_if_no_tty=True, logfile=logfile, flush=True) as inform:
             first = False
             if repeat:
                 display("rewinding")
-    except (KeyboardInterrupt, BrokenPipeError):
+    except KeyboardInterrupt:
         display('mp: killed at user request.')
         songs_already_played = player.songs_already_played()
     except Error as e:
