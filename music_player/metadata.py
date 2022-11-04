@@ -5,12 +5,14 @@
 # Imports {{{1
 from inform import Color, join, os_error, warn
 from .prefs import (
-    show_album, show_track, title_color, artist_color, album_color, path_color
+    show_album, show_track,
+    title_color, artist_color, album_color, path_color, punct_color
 )
 title_color = Color(title_color, Color.isTTY())
 artist_color = Color(artist_color, Color.isTTY())
 album_color = Color(album_color, Color.isTTY())
 path_color = Color(path_color, Color.isTTY())
+punct_color = Color(punct_color, Color.isTTY())
 
 # MetaData constructor {{{1
 # I have a very weak understanding of the way metadata is implemented and why
@@ -109,11 +111,12 @@ class MetaData(object):
             artist = artist_color(self.artist) if self.artist else None,
             title = title_color(self.title) if self.title else None,
             path = path_color(self.media_path) if self.media_path else None,
+            sep = punct_color('—'),
             album = album_color(album) if album else None,
             template = (
-                '{title}  {artist}  {album}',
-                '{title}  {artist}',
-                '{title}  {album}',
+                '{title} {sep} {artist} {sep} {album}',
+                '{title} {sep} {artist}',
+                '{title} {sep} {album}',
                 '{title}',
                 '{path}',
             )
