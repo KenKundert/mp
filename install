@@ -28,7 +28,8 @@ for sect in 1
 do
     mkdir -p ~/.local/man/man$sect
     rm -f ~/.local/man/man$sect/$cmd.$sect
-    ln -s ~/.local/lib/python$vers/site-packages/$cmd-*.egg/man/man$sect/$cmd.$sect ~/.local/man/man$sect
+    # ln -s ~/.local/lib/python$vers/site-packages/$cmd-*.egg/man/man$sect/$cmd.$sect ~/.local/man/man$sect
+    cp  mp.1 ~/.local/man/man$sect
     # if you get a 'failed to create symbolic link: file exists' message when 
     # running install, it is because there are previous versions of mp 
     # installed in ~/.local.  Delete them and the message should go away.

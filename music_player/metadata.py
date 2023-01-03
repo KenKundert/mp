@@ -5,14 +5,14 @@
 # Imports {{{1
 from inform import Color, join, os_error, warn
 from .prefs import (
-    show_album, show_track,
+    show_album, show_track, summary_sep, now_playing_sep,
     title_color, artist_color, album_color, path_color, punct_color
 )
-title_color = Color(title_color, Color.isTTY())
-artist_color = Color(artist_color, Color.isTTY())
-album_color = Color(album_color, Color.isTTY())
-path_color = Color(path_color, Color.isTTY())
-punct_color = Color(punct_color, Color.isTTY())
+title_color = Color(title_color, enable=Color.isTTY())
+artist_color = Color(artist_color, enable=Color.isTTY())
+album_color = Color(album_color, enable=Color.isTTY())
+path_color = Color(path_color, enable=Color.isTTY())
+punct_color = Color(punct_color, enable=Color.isTTY())
 
 # MetaData constructor {{{1
 # I have a very weak understanding of the way metadata is implemented and why
@@ -111,7 +111,7 @@ class MetaData(object):
             artist = artist_color(self.artist) if self.artist else None,
             title = title_color(self.title) if self.title else None,
             path = path_color(self.media_path) if self.media_path else None,
-            sep = punct_color('—'),
+            sep = punct_color(summary_sep),
             album = album_color(album) if album else None,
             template = (
                 '{title} {sep} {artist} {sep} {album}',
@@ -127,7 +127,7 @@ class MetaData(object):
         if self.now_playing_path:
             out = [each for each in [self.artist, self.title] if each]
             try:
-                self.now_playing_path.write_text(' — '.join(out))
+                self.now_playing_path.write_text(f' {now_playing_sep} '.join(out))
             except OSError as e:
                 if not self.warned:
                     warn(os_error(e))
