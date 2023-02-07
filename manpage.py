@@ -65,7 +65,7 @@ PROGRAM_MANPAGE = {
         OPTIONS
         =======
 
-        -q, --quiet     Do not print name of the music file being played.
+        -t, --terse     Do not print name of the music file being played.
         -r, --repeat    Repeat songs.
         -s, --shuffle   Shuffle songs.  If combined with repeat, the songs will be
                         shuffled before each repeat.

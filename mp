@@ -18,7 +18,7 @@ Usage:
     mp [options] [<songs> ...]
 
 Options:
-    -q, --quiet      Do not print name of the music file being played.
+    -t, --terse      Do not print name of the music file being played.
     -r, --repeat     Repeat songs.
     -s, --shuffle    Shuffle songs. If combined with repeat, the songs will be
                      shuffled before each repeat.
@@ -81,7 +81,7 @@ with Inform(notify_if_no_tty=True, logfile=logfile, flush=True) as inform:
     # Command line processing must be performed before importing gstreamer
     # otherwise it tries to handle the command line options.
     args = cmd_line[1:]
-    if args == [] or args == ['--quiet']:
+    if args == [] or args == ['--terse']:
         # Command line is empty, try to restart
         narrate('command line is empty, reading', restart_path, end='.\n')
         try:
@@ -115,7 +115,7 @@ with Inform(notify_if_no_tty=True, logfile=logfile, flush=True) as inform:
     playlist = args['--playlist']
     write_restart_file = not args['--no-restart']
     songs = args['<songs>'][1:]
-    inform.quiet = args['--quiet']
+    inform.quiet = args['--terse']
 
     # Construct and initialize player {{{2
     try:
@@ -148,7 +148,7 @@ with Inform(notify_if_no_tty=True, logfile=logfile, flush=True) as inform:
             loop = GLib.MainLoop()
             thread = threading.Thread(
                 target=player.play,
-                args=(loop.quit, args['--quiet'])
+                args=(loop.quit, args['--terse'])
             )
             thread.setDaemon(True)
             thread.start()
