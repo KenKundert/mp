@@ -160,7 +160,7 @@ with Inform(notify_if_no_tty=True, logfile=logfile, flush=True) as inform:
         display('mp: killed at user request.')
         songs_already_played = player.songs_already_played()
     except Error as e:
-        e.terminate()
+        e.report()
 
     # Termination {{{2
     if now_playing_path:
