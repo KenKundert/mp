@@ -9,12 +9,12 @@ Requires Python and 3.6 or better. You will need install the docutils, Gobject,
 gstreamer, and mutagen packages for Python. For Fedora, use::
 
    dnf install python3-gobject python3-gstreamer1 gstreamer-plugins-good
-   pip3 install --user docutils mutagen
+   pip3 install docutils mutagen
 
 For Arch, use::
 
    pacman -S python-gobject gtk3 gstreamer gst-plugins-base gst-plugins-good gst-libav
-   pip3 install --user docutils mutagen
+   pip3 install docutils mutagen
 
 If you want mp3 support, you also need to install the 'ugly' plugins from the 
 RPM Fusion non-free repository::
@@ -45,3 +45,13 @@ To read the MP manual::
 To run MP::
 
    $ mp music-files
+
+To play all music files contained in the current directory and any 
+subdirectories::
+
+   $ mp .
+
+To play all music playlists contained in the current directory and any 
+subdirectories::
+
+   $ mp **/*.m4a

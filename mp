@@ -118,6 +118,7 @@ with Inform(notify_if_no_tty=True, logfile=logfile, flush=True) as inform:
     inform.quiet = args['--terse']
 
     # Construct and initialize player {{{2
+    songs_already_played = []
     try:
         narrate('starting player in', Path.cwd())
         player = Player(now_playing_path, inform)
